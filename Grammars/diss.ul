@@ -1,0 +1,2675 @@
+usedim id
+usedim lp
+usedim idlp
+usedim pa
+usedim idpa
+usedim sc
+usedim pasc
+usedim clls
+usedim ps
+usedim is
+usedim psis
+usedim lex
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% define id dimension
+defdim id {
+  deftype "id.label" {
+adj
+adv
+comp
+det
+iobj
+obj
+part
+pmod
+pobj1
+pobj2
+prepc
+rel
+root
+sub
+subj
+vbse
+vinf
+vprt
+}
+  deflabeltype "id.label"
+  deftype "id.person" {first second third}
+  deftype "id.number" {sg pl}
+  deftype "id.gender" {masc fem neut}
+  deftype "id.case" {nom acc}
+  deftype "id.agr" tuple("id.person" "id.number" "id.gender" "id.case")
+  deftype "id.pagr" {at by in of on to with}
+  defattrstype {agr: "id.agr"
+                pagr: "id.pagr"}
+  defentrytype {in: valency("id.label")
+                out: valency("id.label")
+                agrs: iset("id.agr")
+                pagrs: iset("id.pagr")
+                pobj1: iset("id.pagr")
+                pobj2: iset("id.pagr")}
+%%
+  useprinciple "principle.graphConstraints" { dims {D: id} }
+  useprinciple "principle.graphDist" { dims {D: id} }
+  useprinciple "principle.tree" { dims {D: id} }
+  useprinciple "principle.valency" {
+    dims {D: id}
+    args {In: _.D.entry.in
+          Out: _.D.entry.out}}
+  useprinciple "principle.agr" {
+    dims {D: id}
+    args {Agr: _.D.attrs.agr
+          Agrs: _.D.entry.agrs}}
+  useprinciple "principle.agreement" {
+    dims {D: id}
+    args {Agr1: ^.D.attrs.agr
+          Agr2: _.D.attrs.agr
+          Agree: {det subj}}}
+  useprinciple "principle.government" {
+    dims {D: id}
+    args {Agr2: _.D.attrs.agr
+          Govern: {subj: ($ nom)
+                   obj: ($ acc)
+                   prepc: ($ acc)}}}
+  useprinciple "principle.agr" {
+    dims {D: id}
+    args {Agr: _.D.attrs.pagr
+          Agrs: _.D.entry.pagrs}}
+  useprinciple "principle.government" {
+    dims {D: id}
+    args {Agr2: _.D.attrs.pagr
+          Govern: {pobj1: ^.D.entry.pobj1
+                   pobj2: ^.D.entry.pobj2}}}
+%%
+  output "output.decode"
+  output "output.pretty"
+}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% define lp dimension
+defdim lp {
+  deftype "lp.label" {
+compf
+rprof
+vvf 
+vf 
+fadvf
+lbf
+mf1
+mf2
+rbf
+padvf
+tadvf
+nf
+%%
+detf
+adjf
+padjf
+relf
+%%
+prepcf
+%%
+root
+%%
+"^"
+}
+  deflabeltype "lp.label"
+  defentrytype {in: valency("lp.label")
+                out: valency("lp.label")
+                order: set(tuple("lp.label" "lp.label"))}
+%%
+  useprinciple "principle.graphConstraints" { dims {D: lp} }
+  useprinciple "principle.graphDist" { dims {D: lp} }
+  useprinciple "principle.tree" { dims {D: lp} }
+  useprinciple "principle.projectivity" { dims {D: lp} }
+  useprinciple "principle.valency" {
+    dims {D: lp}
+    args {In: _.D.entry.in
+          Out: _.D.entry.out}}
+  useprinciple "principle.order2" {
+    dims {D: lp}
+    args {Order: _.D.entry.order
+          Yields: true}}
+%%
+  output "output.decode"
+  output "output.pretty"
+}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% define idlp dimension
+defdim idlp {
+  defentrytype {blocks: set("id.label")}
+%%
+  useprinciple "principle.climbing" {
+    dims {D1: lp
+          D2: id}}
+  useprinciple "principle.barriers" {
+    dims {D1: lp
+          D2: id
+          D3: idlp}
+    args {Blocks: _.D3.entry.blocks}}
+  useprinciple "principle.linkingDaughterEnd" {
+    dims {D1: lp
+          D2: id
+          D3: idlp}
+    args {End: {vf: {subj}}}}
+  useprinciple "principle.linkingEnd" {
+    dims {D1: lp
+          D2: id
+          D3: idlp}
+    args {End: {mf1: {iobj}
+                mf2: {obj}}}}
+%%
+  output "output.decode"
+  output "output.pretty"
+}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% define pa dimension
+defdim pa {
+%%
+  deftype "pa.label" {addr ag agm del det pat patm root th thm}
+  deflabeltype "pa.label"
+  defentrytype {in: valency("pa.label")
+                out: valency("pa.label")
+                lockDaughters: set("pa.label")}
+%%
+  useprinciple "principle.graphConstraints" { dims {D: pa} }
+  useprinciple "principle.graphDist" { dims {D: pa} }
+  useprinciple "principle.dag" {
+    dims {D: pa}
+    args {Connected: false
+          DisjointDaughters: true}}
+  useprinciple "principle.valency" {
+    dims {D: pa}
+    args {In: _.D.entry.in
+          Out: _.D.entry.out}}
+  useprinciple "principle.lockingDaughters" {
+    dims {D1: pa
+          D2: pa
+          D3: pa}
+    args {LockDaughters: _.D3.entry.lockDaughters
+          ExceptAbove: {th}
+          Key: {agm patm}}}
+  %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%
+  %% use and choose outputs
+  output "output.decode"
+  output "output.pretty"
+}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% define idpa dimension
+defdim idpa {
+  defentrytype {linkDaughterEnd: vec("pa.label" set("id.label"))
+                linkBelow1or2Start: vec("pa.label" set("id.label"))
+                linkBelowStart: vec("pa.label" set("id.label"))
+                linkAboveBelow1or2Start: vec("pa.label" set("id.label"))
+                lockDaughters: set("id.label")
+                linkMother: set("pa.label")
+                linkAboveEnd: vec("pa.label" set("id.label"))
+                agree: set("pa.label")}
+%%
+  useprinciple "principle.linkingDaughterEnd" {
+    dims {D1: pa
+          D2: id
+          D3: idpa}
+    args {End: ^.D3.entry.linkDaughterEnd}}
+  useprinciple "principle.linkingBelow1or2Start" {
+    dims {D1: pa
+          D2: id
+          D3: idpa}
+    args {Start: ^.D3.entry.linkBelow1or2Start}}
+  useprinciple "principle.linkingBelowStart" {
+    dims {D1: pa
+          D2: id
+          D3: idpa}
+    args {Start: ^.D3.entry.linkBelowStart}}
+  useprinciple "principle.linkingAboveBelow1or2Start" {
+    dims {D1: pa
+          D2: id
+          D3: idpa}
+    args {Start: ^.D3.entry.linkAboveBelow1or2Start}}
+  useprinciple "principle.lockingDaughters" {
+    dims {D1: id
+          D2: pa
+          D3: idpa}
+    args {LockDaughters: _.D3.entry.lockDaughters
+          ExceptAbove: {}
+          Key: {agm patm}}}
+  useprinciple "principle.linkingMother" {
+    dims {D1: pa
+          D2: id
+          D3: idpa}
+    args {Which: ^.D3.entry.linkMother}}
+  useprinciple "principle.linkingAboveEnd" {
+    dims {D1: pa
+          D2: id
+          D3: idpa}
+    args {End: ^.D3.entry.linkAboveEnd}}
+  useprinciple "principle.partialAgreement" {
+    dims {D1: pa
+          D2: id
+          D3: idpa}
+    args {Agr1: ^.D2.attrs.agr
+          Agr2: _.D2.attrs.agr
+          Agree: ^.D3.entry.agree
+          Projs: {3}}}
+%%
+  output "output.decode"
+  output "output.pretty"
+}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% define sc dimension
+defdim sc {
+%%
+  deftype "sc.label" {del q r root s}
+  deflabeltype "sc.label"
+  defentrytype {in: valency("sc.label")
+                out: valency("sc.label")}
+%%
+  useprinciple "principle.graphConstraints" { dims {D: sc} }
+  useprinciple "principle.graphDist" { dims {D: sc} }
+  useprinciple "principle.tree" { dims {D: sc} }
+  useprinciple "principle.valency" {
+    dims {D: sc}
+    args {In: _.D.entry.in
+          Out: _.D.entry.out}}
+  %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%
+  %% use and choose outputs
+  output "output.decode"
+  output "output.pretty"
+}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% define pasc dimension
+defdim pasc {
+%%
+  defentrytype {linkAboveEnd: vec("pa.label" set("sc.label"))
+                linkBelowStart: vec("pa.label" set("sc.label"))
+                linkDaughterEnd: vec("pa.label" set("sc.label"))}
+                
+%%
+  useprinciple "principle.linkingAboveEnd" {
+    dims {D1: pa
+          D2: sc
+          D3: pasc}
+    args {End: ^.D3.entry.linkAboveEnd}}
+  useprinciple "principle.linkingBelowStart" {
+    dims {D1: pa
+          D2: sc
+          D3: pasc}
+    args {Start: ^.D3.entry.linkBelowStart}}
+  useprinciple "principle.linkingDaughterEnd" {
+    dims {D1: pa
+          D2: sc
+          D3: pasc}
+    args {End: ^.D3.entry.linkDaughterEnd}}
+%%
+  output "output.decode"
+  output "output.pretty"
+}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% define clls dimension
+defdim clls {
+  deftype "clls.var" {x1 x2 x3 x4 x5 x6 x7 x8 x9}
+  defentrytype {cons: string
+                anchor: string
+                roots: set("clls.var")
+                dom: vec("sc.label" set("clls.var"))
+                lam: vec("pa.label" set("clls.var"))
+                var: vec("pa.label" set("clls.var"))}
+%%
+  output "output.clls"
+  output "output.clls1"
+%  useoutput "output.clls"
+}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% define ps dimension
+defdim ps {
+%%
+  deftype "ps.label" {pa1 pa2 bt1 bt2 pa1bt1 pa2bt2 ua "^"}
+  deflabeltype "ps.label"
+  defentrytype {in: valency("ps.label")
+                out: valency("ps.label")
+                order: set(tuple("ps.label" "ps.label"))}
+%%
+  useprinciple "principle.graphConstraints" { dims {D: ps} }
+  useprinciple "principle.graphDist" { dims {D: ps} }
+  useprinciple "principle.tree" { dims {D: ps} }
+  useprinciple "principle.projectivity" { dims {D: ps} }
+  useprinciple "principle.valency" {
+    dims {D: ps}
+    args {In: _.D.entry.in
+          Out: _.D.entry.out}}
+  useprinciple "principle.order2" {
+    dims {D: ps}
+    args {Order: _.D.entry.order
+          Yields: true}}
+%%
+  output "output.decode"
+  output "output.pretty"
+}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% define is dimension
+defdim is {
+%%
+  deftype "is.label" {bg rh th umth "^"}
+  deflabeltype "is.label"
+  defentrytype {in: valency("is.label")
+                out: valency("is.label")}
+  %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%
+  %% use principles
+  useprinciple "principle.graphConstraints" { dims {D: is} }
+  useprinciple "principle.graphDist" { dims {D: is} }
+  useprinciple "principle.tree" { dims {D: is} }
+  useprinciple "principle.projectivity" { dims {D: is} }
+  useprinciple "principle.valency" {
+    dims {D: is}
+    args {In: _.D.entry.in
+          Out: _.D.entry.out}}
+  useprinciple "principle.order2" {
+    dims {D: is}
+    args {Order: <>
+          Yields: true}}
+%%
+  output "output.decode"
+  output "output.pretty"
+}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% define psis dimension
+defdim psis {
+%%
+  useprinciple "principle.subgraphs" {
+    dims {D1: is
+          D2: ps
+          D3: psis}
+    args {Start: {th: {bt1 pa1bt1}
+                  rh: {bt2 pa2bt2}}}}
+%%
+  output "output.decode"
+  output "output.pretty"
+}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% define lex dimension
+defdim lex {
+  defentrytype {word: string}
+%  useprinciple "principle.entries" {}
+%%
+  output "output.allDags1"
+  output "output.allDags2"
+  output "output.allLatexs1"
+  output "output.allLatexs2"
+%%
+  useoutput "output.allDags1"
+}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% define id lexical classes
+
+%% roots
+defclass "id_root" {
+  dim id {in: {}
+          out: {root!}}}
+
+%%%%%%%%%%%%%%%
+%% finite verbs
+defclass "id_fin" {
+  dim id {out: {subj!}}}
+
+defclass "id_fin_root" {
+  "id_fin"
+  dim id {in: {root?}}}
+
+defclass "id_fin_sub" {
+  "id_fin"
+  dim id {in: {sub?}
+          out: {comp?}}}
+
+defclass "id_fin_rel" {
+  "id_fin"
+  dim id {in: {rel?}}}
+
+%% infinite verbs
+defclass "id_vinf" {
+  dim id {in: {vinf?}
+          out: {part!}}}
+
+defclass "id_vbse" {
+  dim id {in: {vbse?}}}
+
+defclass "id_vprt" {
+  dim id {in: {vprt?}}}
+
+%% main verbs
+defclass "id_main" {
+  dim id {out: {adv* pmod*}}}
+
+%% auxiliary verbs
+defclass "id_aux" {
+  dim id {out: {}}}
+
+%%%%%%%%%%%%%%%
+%% adverbs, particles and complementizers
+
+%% adverbs
+defclass "id_adv" {
+  dim id {in: {adv?}}}
+
+%% particles
+defclass "id_part" {
+  dim id {in: {part?}}}
+
+%% complementizers
+defclass "id_comp" {
+  dim id {in: {comp?}}}
+
+%%%%%%%%%%%%%%%
+%% subcat
+
+%% verbs requiring an object
+defclass "id_objc" {
+  dim id {out: {obj!}}}
+
+%% verbs requiring an indirect object
+defclass "id_iobjc" {
+  dim id {out: {iobj!}}}
+
+%% verbs requiring a prepositional object 1
+defclass "id_pobj1c" P {
+  dim id {out: {pobj1!}
+          pobj1: P}}
+
+%% verbs requiring a prepositional object 2
+defclass "id_pobj2c" P {
+  dim id {out: {pobj2!}
+          pobj2: P}}
+
+%% verbs requiring a full infinitive
+defclass "id_vinfc" {
+  dim id {out: {vinf!}}}
+
+%% verbs requiring a base infinitive
+defclass "id_vbsec" {
+  dim id {out: {vbse!}}}
+
+%% verbs requiring a past participle 
+defclass "id_vprtc" {
+  dim id {out: {vprt!}}}
+
+%% verbs requiring a subordinate clause
+defclass "id_subc" {
+  dim id {out: {sub!}}}
+
+%% agreement
+defclass "id_1sg" {
+  dim id {agrs: ($ first & sg)}}
+
+defclass "id_3sg" {
+  dim id {agrs: ($ third & sg)}}
+
+defclass "id_non13sg" {
+  dim id {agrs: ($ second & sg) |
+          agrs: ($ pl)}}
+
+defclass "id_non3sg" {
+  dim id {agrs: ($ (first|second) & sg) |
+          agrs: ($ pl)}}
+
+%%%%%%%%%%%%%%%
+%% nouns
+defclass "id_noun" {
+  dim id {in: {subj? obj? iobj? prepc?}}}
+
+%% proper nouns
+defclass "id_pnoun" A {
+  "id_noun"
+  dim id {agrs: A
+          out: {adj* pmod* rel?}}}
+
+%% common nouns
+defclass "id_cnoun" A {
+  "id_noun"
+  dim id {agrs: A
+          out: {det! adj* pmod* rel?}}}
+
+%% personal pronouns
+defclass "id_perpro" A {
+  "id_noun"
+  dim id {agrs: A
+          out: {adj* pmod* rel?}}}
+
+%% relative pronouns
+defclass "id_relpro" A {
+  "id_noun"
+  dim id {agrs: A}}
+
+%% wh pronouns
+defclass "id_whpro" A { 
+  "id_noun"
+  dim id {agrs: A}}
+
+%% determiners
+defclass "id_det" {
+  dim id {in: {det?}}}
+
+%% adjectives
+defclass "id_adj" {
+  dim id {in: {adj?}}}
+
+%% agreement
+defclass "id_sg" {
+  dim id {agrs: ($ sg)}}
+
+defclass "id_pl" {
+  dim id {agrs: ($ pl)}}
+
+%%%%%%%%%%%%%%%
+%% prepositions
+defclass "id_prep" {
+  dim id {out: {prepc!}}}
+
+%% prepositional objects
+defclass "id_pobj" W {
+  "id_prep"
+  dim id {in: {pobj1? pobj2?}
+          pagrs: {W}}}
+
+%% prepositional modifiers
+defclass "id_pmod" W {
+  "id_prep"
+  dim id {in: {pmod?}
+          pagrs: {W}}}
+
+defclass "id_padj" W { "id_pmod" {W: W} }
+
+defclass "id_padv" W { "id_pmod" {W: W} }
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% define lp lexical classes
+
+%% roots
+defclass "lp_root" {
+  dim lp {in: {}
+          out: {root!}
+          order: <root "^">}}
+
+%%%%%%%%%%%%%%%
+%% finite verbs
+defclass "lp_fin" {
+  dim lp {out: {lbf? fadvf* mf1? mf2? rbf* padvf* tadvf* nf?}}}
+
+defclass "lp_fin_root" {
+  "lp_fin"
+  dim lp {in: {root?}
+          out: {vvf? vf!}}}
+
+defclass "lp_fin_sub" {
+  "lp_fin"
+  dim lp {in: {vvf? nf?}
+          out: {compf? vf?}}}
+
+defclass "lp_fin_rel" {
+  "lp_fin"
+  dim lp {in: {relf?}
+          out: {rprof! vf?}}}
+
+%% infinite verbs
+defclass "lp_vinf" {
+  dim lp {in: {rbf?}
+          out: {vvf! lbf? fadvf* mf1? mf2? rbf* padvf* tadvf* nf?}}}
+
+defclass "lp_vbse" {
+  dim lp {in: {lbf?}
+          out: {lbf?}}}
+
+defclass "lp_vprt" {
+  dim lp {in: {lbf?}
+          out: {lbf?}}}
+
+%% main verbs
+defclass "lp_main" {
+  dim lp {order: <compf rprof vvf vf fadvf "^" lbf mf1 mf2 rbf padvf tadvf nf>}}
+
+%% auxiliary verb
+defclass "lp_aux" {
+  dim lp {order: <compf rprof vvf vf "^" fadvf lbf mf1 mf2 rbf padvf tadvf nf>}}
+
+%% questions auxiliary verb
+defclass "lp_qaux" {
+  dim lp {order: <compf rprof vvf "^" vf fadvf lbf mf1 mf2 rbf padvf tadvf nf>}}
+
+%%%%%%%%%%%%%%%
+%% adverbs, particles and complementizers
+
+%% adverbs
+defclass "lp_adv" F {
+  dim lp {in: {F? vvf?}}}
+
+%% particles
+defclass "lp_part" {
+  dim lp {in: {vvf?}}}
+
+%% complementizers
+defclass "lp_comp" {
+  dim lp {in: {compf?}}}
+
+%%%%%%%%%%%%%%%
+%% nouns
+defclass "lp_noun" {
+  dim lp {in: {vvf? vf? mf1? mf2? prepcf?}
+          out: {detf? adjf* padjf? relf?}
+          order: <detf adjf "^" padjf relf>}}
+
+%% proper nouns
+defclass "lp_pnoun" { "lp_noun" }
+
+%% common nouns
+defclass "lp_cnoun" { "lp_pnoun" }
+
+%% personal pronouns
+defclass "lp_perpro" { "lp_noun" }
+
+%% relative pronouns
+defclass "lp_relpro" {
+  dim lp {in: {rprof? prepcf?}}}
+
+%% wh pronouns
+defclass "lp_whpro" {
+  dim lp {in: {vvf? vf? prepcf?}}}
+
+%% determiners
+defclass "lp_det" {
+  dim lp {in: {detf?}}}
+
+%% adjectives
+defclass "lp_adj" {
+  dim lp {in: {adjf?}}}
+
+%%%%%%%%%%%%%%%
+%% prepositions
+defclass "lp_prep" {
+  dim lp {out: {prepcf?}
+          order: <"^" prepcf>}}
+
+%% prepositional objects
+defclass "lp_pobj" {
+  "lp_prep"
+  dim lp {in: {rbf? vvf? rprof?}}}
+
+%% noun-modifying prepositions
+defclass "lp_padj" {
+  "lp_prep"
+  dim lp {in: {padjf?}}}
+
+%% verb-modifying prepositions
+defclass "lp_padv" F {
+  "lp_prep"
+  dim lp {in: {F? vvf? rprof?}}}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% define idlp lexical classes
+
+defclass "idlp_root" {}
+
+%%%%%%%%%%%%%%%
+%% finite verbs
+defclass "idlp_fin" { 
+  %% block all labels except: det, adj, padj, rel (nouns), part (full
+  %% infinitives), root, sub, subj, obj, iobj, pobj1, pobj2
+  dim idlp {blocks: {adv comp pmod sub vbse vinf vprt}}}
+        
+defclass "idlp_fin_root" { "idlp_fin" }
+
+defclass "idlp_fin_sub" { "idlp_fin" }
+
+defclass "idlp_fin_rel" { "idlp_fin" }
+
+%% infinite verbs
+defclass "idlp_vinf" { dim idlp {blocks: {part vinf vbse vprt}} }
+
+defclass "idlp_vbse" {}
+
+defclass "idlp_vprt" {}
+
+%% main verbs
+defclass "idlp_main" {}
+
+%% auxiliary verbs
+defclass "idlp_aux" {}
+
+%%%%%%%%%%%%%%%
+%% adverbs, particles and complementizers
+
+%% adverbs
+defclass "idlp_adv" {}
+
+%% particles
+defclass "idlp_part" {}
+
+%% complementizers
+defclass "idlp_comp" {}
+
+%%%%%%%%%%%%%%%
+%% nouns
+defclass "idlp_noun" { dim idlp {blocks: {det adj pmod rel}} }
+
+%% proper nouns
+defclass "idlp_pnoun" { "idlp_noun" }
+
+%% common nouns
+defclass "idlp_cnoun" { "idlp_noun" }
+
+%% personal pronouns
+defclass "idlp_perpro" { "idlp_noun" }
+
+%% relative pronouns
+defclass "idlp_relpro" { "idlp_noun" }
+
+%% wh pronouns
+defclass "idlp_whpro" { "idlp_noun" }
+
+%% determiners
+defclass "idlp_det" {}
+
+%% adjectives
+defclass "idlp_adj" {}
+
+%%%%%%%%%%%%%%%
+%% prepositions
+defclass "idlp_prep" {}
+
+%% prepositional objects
+defclass "idlp_pobj" { "idlp_prep" }
+
+%% noun-modifying prepositions
+defclass "idlp_padj" { "idlp_prep" }
+
+%% verb-modifying prepositions
+defclass "idlp_padv" { "idlp_prep" }
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% define pa lexical classes
+
+%% predicate
+defclass "pa_pred" {
+  dim pa {in: {root!}}}
+
+%% deleted
+defclass "pa_del" {
+  dim pa {in: {del!}}}
+
+%% roots
+defclass "pa_root" {
+  dim pa {in: {}
+          out: {root* del*}}}
+
+%%%%%%%%%%%%%%%
+%% finite verbs
+defclass "pa_fin" {}
+
+%% infinite verbs
+defclass "pa_vinf" {}
+
+defclass "pa_vbse" {}
+
+defclass "pa_vprt" {}
+
+%% main verbs
+defclass "pa_main" {
+  "pa_pred"
+  dim pa {in: {th? thm*}}}
+
+%% auxiliary verbs
+defclass "pa_aux" { "pa_del" }
+
+%%%%%%%%%%%%%%%
+%% adverbs, particles and complementizers
+
+%% adverbs
+defclass "pa_adv" {
+  "pa_pred"
+  dim pa {in: {thm*}
+          out: {thm!}}}
+
+%% particles
+defclass "pa_part" { "pa_del" }
+
+%% complementizers
+defclass "pa_comp" { "pa_del" }
+
+%%%%%%%%%%%%%%%
+%% subcat
+
+%% verbs requiring an agent
+defclass "pa_agc" {
+  dim pa {out: {ag!}}}
+
+%% verbs requiring a patient
+defclass "pa_patc" {
+  dim pa {out: {pat!}}}
+
+%% verbs requiring an addressee
+defclass "pa_addrc" {
+  dim pa {out: {addr!}}}
+
+%% verbs requiring a th
+defclass "pa_thc" {
+  dim pa {out: {th!}}}
+
+%% subject control/raising
+defclass "pa_subjcr" {
+  dim pa {lockDaughters: {pat addr}}}
+
+%% object control/raising
+defclass "pa_objcr" {
+  dim pa {lockDaughters: {ag addr}}}
+
+%% prepositional objects 1 control/raising
+defclass "pa_pobj1cr" {
+  dim pa {lockDaughters: {ag pat}}}
+
+%% no control/raising
+defclass "pa_nocr" {
+  dim pa {lockDaughters: {ag pat addr}}}
+
+%%%%%%%%%%%%%%%
+%% nouns
+defclass "pa_noun" {
+  dim pa {in: {ag* pat* addr* agm* patm*}}}
+
+%% proper nouns
+defclass "pa_pnoun" { "pa_noun" }
+
+%% common nouns
+defclass "pa_cnoun" {
+  "pa_noun" 
+  dim pa {out: {det!}}}
+
+%% personal pronouns
+defclass "pa_perpro" { "pa_noun" }
+
+%% relative pronouns
+defclass "pa_relpro" {
+  "pa_noun"
+  dim pa {out: {agm!}}}
+
+%% wh pronouns
+defclass "pa_whpro" { "pa_noun" }
+
+%% determiners
+defclass "pa_det" {
+  dim pa {in: {det!}}}
+
+%% adjectives
+defclass "pa_adj" {
+  "pa_pred"
+  dim pa {out: {agm!}}}
+
+%%%%%%%%%%%%%%%
+%% prepositions
+
+%% prepositional objects
+defclass "pa_pobj" { "pa_del" }
+
+%% noun-modifying prepositions
+defclass "pa_padj" {
+  "pa_adj"
+  dim pa {out: {patm!}}}
+
+%% verb-modifying prepositions
+defclass "pa_padv" {
+  "pa_adv"
+  dim pa {out: {patm!}}}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% define idpa lexical classes
+
+%% roots
+defclass "idpa_root" {}
+
+%%%%%%%%%%%%%%%
+%% finite verbs
+defclass "idpa_fin" {}
+
+%% infinite verbs
+defclass "idpa_vinf" {}
+
+defclass "idpa_vbse" {}
+
+defclass "idpa_vprt" {}
+
+%% main verbs
+defclass "idpa_main" {}
+
+%% auxiliary verbs
+defclass "idpa_aux" {}
+
+%%%%%%%%%%%%%%%
+%% adverbs, particles and complementizers
+
+%% adverbs
+defclass "idpa_adv" {
+  dim idpa {linkMother: {thm}}}
+
+%% particles
+defclass "idpa_part" {}
+
+%% complementizers
+defclass "idpa_comp" {}
+
+%%%%%%%%%%%%%%%
+%% subcat
+
+%% realize the agent by the subject (or higher up)
+defclass "idpa_ag_super" {
+  dim idpa {linkAboveBelow1or2Start: {ag: {subj obj iobj pobj1 pobj2}}}}
+
+%% realize the patient by the subject (or higher up)
+defclass "idpa_pat_super" {
+  dim idpa {linkAboveBelow1or2Start: {pat: {subj obj iobj pobj1 pobj2}}}}
+
+%% realize the addressee by the subject (or higher up)
+defclass "idpa_addr_super" {
+  dim idpa {linkAboveBelow1or2Start: {addr: {subj obj iobj pobj1 pobj2}}}}
+
+%% realize the patient by the object
+defclass "idpa_pat_obj" {
+  dim idpa {linkBelow1or2Start: {pat: {obj}}}}
+
+%% realize the addressee by the indirect object
+defclass "idpa_addr_iobj" {
+  dim idpa {linkBelow1or2Start: {addr: {iobj}}}}
+
+%% realize the addressee by a prepositional object 1
+defclass "idpa_addr_pobj1" {
+   dim idpa {linkBelow1or2Start: {addr: {pobj1}}}}
+
+%% realize the agent by a prepositional object 2
+defclass "idpa_ag_pobj2" {
+  dim idpa {linkBelow1or2Start: {ag: {pobj2}}}}
+
+%% realize the th by a full infinitive
+defclass "idpa_th_vinf" {
+  dim idpa {linkBelowStart: {th: {vinf}}}}
+
+%% realize the th by a subordinate sentence
+defclass "idpa_th_sub" {
+  dim idpa {linkBelowStart: {th: {sub}}}}
+
+%% subject control/raising
+defclass "idpa_subjcr" {
+  dim idpa {lockDaughters: {obj iobj}}}
+
+%% object control/raising
+defclass "idpa_objcr" {
+  dim idpa {lockDaughters: {subj iobj}}}
+
+%% prepositional objects 1 control/raising
+defclass "idpa_pobj1cr" {}
+
+%% no control/raising
+defclass "idpa_nocr" {}
+
+%%%%%%%%%%%%%%%
+%% nouns
+
+%% proper nouns
+defclass "idpa_pnoun" {}
+
+%% common nouns
+defclass "idpa_cnoun" {
+  dim idpa {linkDaughterEnd: {det: {det}}}}
+
+%% personal pronouns
+defclass "idpa_perpro" {}
+
+%% relative pronouns
+defclass "idpa_relpro_agree" {
+  dim idpa {agree: {agm}}}
+
+defclass "idpa_relpro_link" {
+  dim idpa {linkAboveEnd: {agm: {rel}}}}
+
+defclass "idpa_relpro" {
+  "idpa_relpro_agree"
+  "idpa_relpro_link"}
+
+%% wh pronouns
+defclass "idpa_whpro" {}
+
+%% determiners
+defclass "idpa_det" {}
+
+%% adjectives
+defclass "idpa_adj" {
+  dim idpa {linkMother: {agm}}}
+
+%%%%%%%%%%%%%%%
+%% prepositions
+
+%% prepositional objects
+defclass "idpa_pobj" {}
+
+%% noun-modifying prepositions
+defclass "idpa_padj" {
+  "idpa_adj"
+  dim idpa {linkDaughterEnd: {patm: {prepc}}}}
+
+%% verb-modifying prepositions
+defclass "idpa_padv" {
+  "idpa_adv"
+  dim idpa {linkDaughterEnd: {patm: {prepc}}}}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% define sc lexical classes
+
+defclass "sc_cont" {
+  dim sc {in: {r? s? root?}}}
+
+defclass "sc_nocont" {
+  dim sc {in: {del!}}}
+
+defclass "sc_sc" {
+  dim sc {out: {s!}}}
+
+%% roots
+defclass "sc_root" {
+  dim sc {in: {}
+          out: {root! del*}}}
+
+%%%%%%%%%%%%%%%
+%% finite verbs
+defclass "sc_fin" {}
+
+%% infinite verbs
+defclass "sc_vinf" {}
+
+defclass "sc_vbse" {}
+
+defclass "sc_vprt" {}
+
+%% main verbs
+defclass "sc_main" { "sc_cont" }
+
+%% auxiliary verbs
+defclass "sc_aux" { "sc_nocont" }
+
+%%%%%%%%%%%%%%%
+%% adverbs, particles and complementizers
+
+%% adverbs
+defclass "sc_adv" {
+  "sc_cont"
+  "sc_sc"}
+
+%% particles
+defclass "sc_part" { "sc_nocont" }
+
+%% complementizers
+defclass "sc_comp" { "sc_nocont" }
+
+%%%%%%%%%%%%%%%
+%% nouns
+defclass "sc_noun" {
+  "sc_cont"
+  "sc_sc"
+  dim sc {out: {r*}}}
+
+%% proper nouns
+defclass "sc_pnoun" { "sc_noun" }
+
+%% common nouns
+defclass "sc_cnoun" {
+  "sc_noun"
+  dim sc {out: {q!}}}
+
+%% personal pronouns
+defclass "sc_perpro" { "sc_noun" }
+
+%% relative pronouns
+defclass "sc_relpro" { "sc_noun" }
+
+%% wh pronouns
+defclass "sc_whpro" { "sc_noun" }
+
+%% determiners
+defclass "sc_det" {
+  dim sc {in: {q?}}}
+
+%% adjectives
+defclass "sc_adj" { "sc_cont" }
+
+%%%%%%%%%%%%%%%
+%% prepositions
+
+%% prepositional objects
+defclass "sc_pobj" { "sc_nocont" }
+
+%% noun-modifying prepositions
+defclass "sc_padj" { "sc_cont" }
+
+%% verb-modifying prepositions
+defclass "sc_padv" {
+  "sc_cont" 
+  "sc_sc"}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% define pasc lexical classes
+
+defclass "pasc_modn" {
+  dim pasc {linkAboveEnd: {agm: {r}}}}  
+
+defclass "pasc_modv" {
+  dim pasc {linkBelowStart: {thm: {s}}}}
+
+%% roots
+defclass "pasc_root" {}
+
+%%%%%%%%%%%%%%%
+%% finite verbs
+defclass "pasc_fin" {}
+
+%% infinite verbs
+defclass "pasc_vinf" {}
+
+defclass "pasc_vbse" {}
+
+defclass "pasc_vprt" {}
+
+%% main verbs
+defclass "pasc_main" {
+  dim pasc {linkAboveEnd: {ag: {s}
+                           pat: {s}
+                           addr: {s}}
+            linkBelowStart: {th: {s}}}}
+
+%% auxiliary verbs
+defclass "pasc_aux" {}
+
+%%%%%%%%%%%%%%%
+%% adverbs, particles and complementizers
+
+%% adverbs
+defclass "pasc_adv" { "pasc_modv" }
+
+%% particles
+defclass "pasc_part" {}
+
+%% complementizers
+defclass "pasc_comp" {}
+
+%%%%%%%%%%%%%%%
+%% nouns
+
+%% proper nouns
+defclass "pasc_pnoun" {}
+
+%% common nouns
+defclass "pasc_cnoun" {
+  dim pasc {linkDaughterEnd: {det: {q}}}}
+
+%% personal pronouns
+defclass "pasc_perpro" {}
+
+%% relative pronouns
+defclass "pasc_relpro" { "pasc_modn" }
+
+%% wh pronouns
+defclass "pasc_whpro" {}
+
+%% determiners
+defclass "pasc_det" {}
+
+%% adjectives
+defclass "pasc_adj" { "pasc_modn" }
+
+%%%%%%%%%%%%%%%
+%% prepositions
+defclass "pasc_pmod" {
+  dim pasc {linkAboveEnd: {patm: {s}}}}
+
+%% prepositional objects
+defclass "pasc_pobj" {}
+
+%% noun-modifying prepositions
+defclass "pasc_padj" {
+  "pasc_modn"
+  "pasc_pmod"}
+
+%% verb-modifying prepositions
+defclass "pasc_padv" {
+  "pasc_modv"
+  "pasc_pmod"}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% define clls lexical classes
+
+defclass "clls_nocont" A {
+  dim clls {cons: ""
+            anchor: A
+            roots: {}}}
+
+%% roots
+defclass "clls_root" A {
+  "clls_nocont" {A: A}}
+
+%%%%%%%%%%%%%%%
+%% finite verbs
+defclass "clls_fin" {}
+
+%% infinite verbs
+defclass "clls_vinf" {}
+
+defclass "clls_vbse" {}
+
+defclass "clls_vprt" {}
+
+%% main verbs
+defclass "clls_main" {}
+
+%% auxiliary verbs
+defclass "clls_aux" {
+  dim clls {cons: ""}}
+
+%%%%%%%%%%%%%%%
+%% adverbs, particles and complementizers
+
+%% adverbs
+defclass "clls_adv" A {
+  dim clls {cons: "label(x1 '@'(x2 x3)) label(x2 anchor)"
+            anchor: A
+            roots: {x1}
+            dom: {s: {x3}}}}
+
+%% particles
+defclass "clls_part" A {
+  "clls_nocont" {A: A}}
+
+%% complementizers
+defclass "clls_comp" A {
+  "clls_nocont" {A: A}}
+
+%%%%%%%%%%%%%%%
+%% subcat
+
+defclass "clls_intrans" {
+  dim clls {cons: "label(x1 '@'(x2 x3)) label(x2 anchor) label(x3 var)"
+            roots: {x1}
+            var: {ag: {x3}}}}
+
+defclass "clls_trans" {
+  dim clls {cons: "label(x1 '@'(x2 x3)) label(x2 '@'(x4 x5)) label(x4 anchor) label(x5 var) label(x3 var)"
+            roots: {x1}
+            var: {ag: {x3}
+                  pat: {x5}}}}
+
+defclass "clls_ditrans" {
+  dim clls {cons: "label(x1 '@'(x2 x3)) label(x2 '@'(x4 x5)) label(x4 '@'(x6 x7)) label(x6 anchor) label(x7 var) label(x5 var) label(x3 var)"
+            roots: {x1}
+            var: {ag: {x3}
+                  pat: {x5}
+                  addr: {x7}}}}
+
+defclass "clls_subjsubjrais" {
+  dim clls {cons: "label(x1 '@'(x2 x3)) label(x2 anchor)"
+            roots: {x1}
+            dom: {s: {x3}}}}
+
+defclass "clls_subjobjrais" {
+  dim clls {cons: "label(x1 '@'(x2 x5)) label(x2 '@'(x3 x4)) label(x3 anchor) label(x5 var)"
+            roots: {x1}
+            dom: {s: {x4}}
+            var: {ag: {x5}}}}
+
+defclass "clls_itrsubjsubjctrl" { "clls_subjobjrais" }
+
+defclass "clls_trsubjsubjctrl" {
+  dim clls {cons: "label(x1 '@'(x2 x7)) label(x2 '@'(x3 x6)) label(x3 '@'(x4 x5)) label(x4 anchor) label(x6 var) label(x7 var)"
+            roots: {x1}
+            dom: {s: {x4}}
+            var: {ag: {x7}
+                  pat: {x6}}}}
+
+defclass "clls_subjobjctrl" { "clls_trsubjsubjctrl" }
+
+defclass "clls_subjpobj1ctrl" {
+  dim clls {cons: "label(x1 '@'(x2 x7)) label(x2 '@'(x3 x6)) label(x3 '@'(x4 x5)) label(x4 anchor) label(x6 var) label(x7 var)"
+            roots: {x1}
+            dom: {s: {x4}}
+            var: {ag: {x7}
+                  addr: {x6}}}}
+
+defclass "clls_itrsubc" { "clls_subjobjrais" }
+
+%%%%%%%%%%%%%%%
+%% nouns
+
+%% proper nouns
+defclass "clls_pnoun" A {
+  dim clls {cons: "label(x1 '@'(x2 x3)) label(x2 anchor) label(x3 lambda(x4))"
+            anchor: A
+            roots: {x1}
+            dom: {s: {x4}}
+            lam: {ag: {x3}
+                  pat: {x3}
+                  addr: {x3}
+                  agm: {x3}
+                  patm: {x3}}}}
+	
+%% common nouns
+defclass "clls_cnoun" A {
+  dim clls {cons: "label(x1 '@'(x2 x8)) label(x2 '@'(x3 x4)) dom(x4 x5) label(x5 '@'(x6 x7)) label(x6 anchor) label(x7 var) label(x8 lambda(x9)) lam(x7 x8)"
+             anchor: A
+             roots: {x1}
+             dom: {q: {x3}
+                   r: {x4}
+                   s: {x9}}
+             lam: {ag: {x8}
+                   pat: {x8}
+                   addr: {x8}
+                   agm: {x8}
+                   patm: {x8}}}}
+
+%% personal pronouns
+defclass "clls_perpro" A { "clls_pnoun" {A: A} }
+
+%% relative pronouns
+defclass "clls_relpro" {
+  dim clls {cons: "label(x1 '@'(x2 x3)) label(x2 var) label(x3 lambda(x4))"
+            anchor: ""
+            roots: {x1}
+            dom: {s: {x4}}
+            lam: {ag: {x3}
+                  pat: {x3}
+                  addr: {x3}}
+            var: {agm: {x2}}}}
+
+%% wh pronouns
+defclass "clls_whpro" A { "clls_pnoun" {A: A} }
+
+%% determiners
+defclass "clls_det" A {
+  dim clls {cons: "label(x1 anchor)"
+            anchor: A
+            roots: {x1}}}
+
+%% adjectives
+defclass "clls_adj" A {
+  dim clls {cons: "label(x1 '@'(x2 x3)) label(x2 anchor) label(x3 var)"
+            anchor: A
+            roots: {x1}
+            var: {agm: {x3}}}}
+
+%%%%%%%%%%%%%%%
+%% prepositions
+
+%% prepositional objects
+defclass "clls_pobj" A {
+  "clls_nocont" {A: A}}
+
+%% noun-modifying prepositions
+defclass "clls_padj" A {
+  dim clls {cons: "label(x1 '@'(x2 x3)) label(x2 '@'(x4 x5)) label(x4 anchor) label(x5 var) label(x3 var)"
+            anchor: A
+            roots: {x1}
+            var: {agm: {x3}
+                  patm: {x5}}}}
+
+%% verb-modifying prepositions
+defclass "clls_padv" A {
+  dim clls {cons: "label(x1 '@'(x2 x3)) label(x2 '@'(x4 x5)) label(x4 anchor) label(x5 var)"
+            anchor: A
+            roots: {x1}
+            dom: {s: {x3}}
+            var: {patm: {x5}}}}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% define ps lexical classes
+
+%% roots
+defclass "ps_root" {
+  dim ps {in: {}
+          out: {bt1* bt2* pa1bt1* pa2bt2*}
+          order: {[bt1 "^"] [bt2 "^"] [pa1bt1 "^"] [pa2bt2 "^"]}}}
+
+%% boundary tones/pitch accents and boundary tones
+defclass "ps_bt" BT PA {
+  dim ps {in: {BT?}
+          out: {PA* ua*}
+          order: {[PA "^"] [ua "^"]}}}
+
+defclass "ps_bt1" { "ps_bt" {BT: bt1 PA: pa1} }
+
+defclass "ps_bt2" { "ps_bt" {BT: bt2 PA: pa2} }
+
+defclass "ps_pa1bt1" { "ps_bt" {BT: pa1bt1 PA: pa1} }
+
+defclass "ps_pa2bt2" { "ps_bt" {BT: pa2bt2 PA: pa2} }
+
+%% pitch accents
+defclass "ps_pa" PA {
+  dim ps {in: {PA?}}}
+
+defclass "ps_pa1" { "ps_pa" {PA: pa1} }
+
+defclass "ps_pa2" { "ps_pa" {PA: pa2} }
+
+%% unaccented words
+defclass "ps_ua" {
+  dim ps {in: {ua?}}}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% define is lexical classes
+
+%% roots
+defclass "is_root" {
+  dim is {in: {}
+          out: ({th* rh+}|{umth* rh+})}}
+
+%% themes
+defclass "is_tf" {
+  dim is {in: {th?}
+          out: {bg*}}}
+
+%% rhemes
+defclass "is_rf" {
+  dim is {in: {rh?}
+          out: {bg*}}}
+
+%% non-foci
+defclass "is_nf" {
+  dim is {in: {bg? umth?}}}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% define psis lexical classes
+
+%% roots
+defclass "psis_root" {
+  "ps_root"
+  "is_root"}
+
+%% themes
+defclass "psis_th_pa" {
+  "ps_pa1"
+  "is_tf"}
+
+defclass "psis_th_pabt" {
+  "ps_pa1bt1"
+  "is_tf"}
+
+defclass "psis_th_bt" {
+  "ps_bt1"
+  "is_nf"}
+
+%% rhemes
+defclass "psis_rh_pa" {
+  "ps_pa2"
+  "is_rf"}
+
+defclass "psis_rh_pabt" {
+  "ps_pa2bt2"
+  "is_rf"}
+
+defclass "psis_rh_bt" {
+  "ps_bt2"
+  "is_nf"}
+
+%% non-foci
+defclass "psis_ua" {
+  "ps_ua"
+  "is_nf"}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% define lex lexical classes
+
+defclass "lex_root" W {
+  dim lex {word: W}}
+
+defclass "lex_pa1" W {
+  dim lex {word: W@"_L+H*"}}
+
+defclass "lex_pa2" W {
+  dim lex {word: W@"_H*"}}
+
+defclass "lex_bt1" W {
+  dim lex {word: W@"_LH%"}}
+
+defclass "lex_bt2" W {
+  dim lex {word: W@"_LL%"}}
+
+defclass "lex_pa1bt1" W {
+  dim lex {word: W@"_L+H*_LH%"}}
+
+defclass "lex_pa2bt2" W {
+  dim lex {word: W@"_H*_LL%"}}
+
+defclass "lex_ua" W {
+  dim lex {word: W}}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% lex lexical classes
+
+%% enter
+defclass "lex_enter" W {
+  ("psis_th_pa" & "lex_pa1" {W: W}) |
+  ("psis_th_bt" & "lex_bt1" {W: W}) |
+  ("psis_th_pabt" & "lex_pa1bt1" {W: W}) |
+  ("psis_rh_pa" & "lex_pa2" {W: W}) |
+  ("psis_rh_bt" & "lex_bt2" {W: W}) |
+  ("psis_rh_pabt" & "lex_pa2bt2" {W: W}) |
+  ("psis_ua" & "lex_ua" {W: W})}
+
+%% roots
+defclass "root" W {
+  "id_root"
+  "lp_root"
+  "idlp_root"
+  "pa_root"
+  "idpa_root"
+  "sc_root"
+  "pasc_root"
+  "clls_root" {A: W}
+  "psis_root"
+  "lex_root" {W: W}}
+
+%%%%%%%%%%%%%%%
+%% finite verbs
+
+defclass "lex_fin" {
+  ("id_fin_root" &
+   "lp_fin_root" &
+   "idlp_fin_root") |
+  ("id_fin_sub" &
+   "lp_fin_sub" &
+   "idlp_fin_sub") |
+  ("id_fin_rel" &
+   "lp_fin_rel" &
+   "idlp_fin_rel")
+  "pa_fin"
+  "idpa_fin"
+  "sc_fin"
+  "pasc_fin"
+  "clls_fin"}
+
+defclass "lex_fin_root" {
+  "id_fin_root"
+  "lp_fin_root"
+  "idlp_fin_root"
+  "pa_fin"
+  "idpa_fin"
+  "sc_fin"
+  "pasc_fin"
+  "clls_fin"}
+
+defclass "lex_fin2" W3sg Wnon3sg {
+  "lex_fin"
+  ("id_3sg" &
+  "lex_enter" {W: W3sg}) |
+  ("id_non3sg" &
+  "lex_enter" {W: Wnon3sg})}
+
+defclass "lex_fin3" W1sg W3sg Wnon13sg {
+  "lex_fin"
+  ("id_1sg" &
+   "lex_enter" {W: W1sg}) |
+  ("id_3sg" &
+   "lex_enter" {W: W3sg}) |
+  ("id_non13sg" &
+   "lex_enter" {W: Wnon13sg})}
+
+defclass "lex_fin2_qaux" W3sg Wnon3sg {
+  "lex_fin_root"
+  ("id_3sg" &
+  "lex_enter" {W: W3sg}) |
+  ("id_non3sg" &
+  "lex_enter" {W: Wnon3sg})}
+
+defclass "lex_fin3_qaux" W1sg W3sg Wnon13sg {
+  "lex_fin_root"
+  ("id_1sg" &
+  "lex_enter" {W: W1sg}) |
+  ("id_3sg" &
+  "lex_enter" {W: W3sg}) |
+  ("id_non13sg" &
+  "lex_enter" {W: Wnon13sg})}
+
+%% infinite verbs
+defclass "lex_vinf" W {
+  "id_vinf"
+  "lp_vinf"
+  "idlp_vinf"
+  "pa_vinf"
+  "idpa_vinf"
+  "sc_vinf"
+  "pasc_vinf"
+  "clls_vinf"
+  "lex_enter" {W: W}}
+
+defclass "lex_vbse" W {
+  "id_vbse"
+  "lp_vbse"
+  "idlp_vbse"
+  "pa_vbse"
+  "idpa_vbse"
+  "sc_vbse"
+  "pasc_vbse"
+  "clls_vbse"
+  "lex_enter" {W: W}}
+
+defclass "lex_vprt" W {
+  "id_vprt"
+  "lp_vprt"
+  "idlp_vprt"
+  "pa_vprt"
+  "idpa_vprt"
+  "sc_vprt"
+  "pasc_vprt"
+  "clls_vprt"
+  "lex_enter" {W: W}}
+
+defclass "lex_infin" Winf Wprt {
+  "lex_vinf" {W: Winf} |
+  "lex_vbse" {W: Winf} |
+  "lex_vprt" {W: Wprt}}
+
+defclass "verb" W3sg Wnon3sg Wprt {
+  "lex_fin2" {W3sg: W3sg
+              Wnon3sg: Wnon3sg} |
+  "lex_infin" {Winf: Wnon3sg
+               Wprt: Wprt}
+  dim clls {anchor: Wnon3sg}}
+
+defclass "verb5" W1sg W3sg Wnon13sg Winf Wprt {
+  "lex_fin3" {W1sg: W1sg
+              W3sg: W3sg
+              Wnon13sg: Wnon13sg} |
+  "lex_infin" {Winf: Winf
+               Wprt: Wprt}
+  dim clls {anchor: Winf}}
+
+defclass "verb_qaux" W3sg Wnon3sg {
+  "lex_fin2_qaux" {W3sg: W3sg
+                   Wnon3sg: Wnon3sg}
+  dim clls {anchor: Wnon3sg}}
+
+defclass "verb_qaux3" W1sg W3sg Wnon13sg {
+  "lex_fin3_qaux" {W1sg: W1sg
+                   W3sg: W3sg
+                   Wnon13sg: Wnon13sg}
+  dim clls {anchor: Wnon13sg}}
+
+%%%%%%%%%%%%%%%
+%% adverbs, particles and complementizers
+%% adverbs
+defclass "lex_adv" W F {
+  "id_adv"
+  "lp_adv" {F: F}
+  "idlp_adv"
+  "pa_adv"
+  "idpa_adv"
+  "sc_adv"
+  "pasc_adv"
+  "clls_adv" {A: W}
+  "lex_enter" {W: W}}
+
+defclass "advf" W {
+  "lex_adv" {W: W
+             F: fadvf}}
+
+defclass "advp" W {
+  "lex_adv" {W: W
+             F: padvf}}
+
+defclass "advt" W {
+  "lex_adv" {W: W
+             F: tadvf}}
+
+%% particles
+defclass "part" W {
+  "id_part"
+  "lp_part"
+  "idlp_part"
+  "pa_part"
+  "idpa_part"
+  "sc_part"
+  "pasc_part"
+  "clls_part" {A: W}
+  "lex_enter" {W: W}}
+
+%% complementizers
+defclass "comp" W {
+  "id_comp"
+  "lp_comp"
+  "idlp_comp"
+  "pa_comp"
+  "idpa_comp"
+  "sc_comp"
+  "pasc_comp"
+  "clls_comp" {A: W}
+  "lex_enter" {W: W}}
+
+%%%%%%%%%%%%%%%
+%% subcat
+
+%% auxiliary
+defclass "lex_aux" {
+  "id_aux"
+  "idlp_aux"
+  "pa_aux"
+  "idpa_aux"
+  "sc_aux"
+  "pasc_aux"
+  "clls_aux"}
+
+%% declarative auxiliary
+defclass "lex_daux" {
+  "lex_aux"
+  "lp_aux"}
+
+%% question auxiliary
+defclass "lex_qaux" {
+  "lex_aux"
+  "lp_qaux"}
+
+%% main verb
+defclass "lex_main" {
+  "id_main"
+  "lp_main"
+  "idlp_main"
+  "pa_main"
+  "idpa_main"
+  "sc_main"
+  "pasc_main"
+  "clls_main"}
+
+%%
+
+defclass "lex_ag_super" {
+  "pa_agc"
+  "idpa_ag_super"}
+
+defclass "lex_pat_super" {
+  "pa_patc"
+  "idpa_pat_super"}
+
+defclass "lex_addr_super" {
+  "pa_addrc"
+  "idpa_addr_super"}
+
+defclass "lex_pat_obj" {
+  "id_objc"
+  "pa_patc"
+  "idpa_pat_obj"}
+
+defclass "lex_addr_iobj" {
+  "id_iobjc"
+  "pa_addrc"
+  "idpa_addr_iobj"}
+
+defclass "lex_addr_pobj1" {
+  "id_pobj1c" {P: {to}}
+  "pa_addrc"
+  "idpa_addr_pobj1"}
+
+defclass "lex_ag_pobj2" {
+  "id_pobj2c" {P: {by}}
+  "pa_agc"
+  "idpa_ag_pobj2"}
+
+defclass "lex_no_ag" {}
+
+%%
+
+defclass "lex_intrans" {
+  "lex_main"
+  "lex_ag_super"}
+
+defclass "lex_trans_act" {
+  "lex_main"
+  "lex_ag_super"
+  "lex_pat_obj"}
+
+defclass "lex_trans_pas" {
+   dim id {in: {vprt!}}
+  "lex_main"
+  "lex_pat_super"
+  ("lex_ag_pobj2" | "lex_no_ag")}
+
+defclass "lex_trans" {
+  "lex_trans_act" | "lex_trans_pas"}
+
+%% Mary gives Peter the book .
+%% Mary gives the book to Peter .
+defclass "lex_ditrans_act" {
+  "lex_trans_act"
+  ("lex_addr_iobj" | "lex_addr_pobj1")}
+
+%% the book is given to Peter by Mary .
+%% Peter is given the book by Mary .
+defclass "lex_ditrans_pas" {
+  dim id {in: {vprt!}}
+  "lex_main"
+  ( "lex_ag_pobj2" | "lex_no_ag" )
+  (( "lex_pat_super" & "lex_addr_pobj1") |
+   ( "lex_addr_super" & "lex_pat_obj"))}
+
+defclass "lex_ditrans" {
+  "lex_ditrans_act" | "lex_ditrans_pas"}
+
+defclass "lex_vinfc" {
+  "id_vinfc"
+  "pa_thc"
+  "idpa_th_vinf"
+  "sc_sc"}
+
+defclass "lex_vbsec" {
+  "id_vbsec"}
+
+defclass "lex_vprtc" {
+  "id_vprtc"}
+
+%% subject control/raising
+defclass "lex_subjcr" {
+  "pa_subjcr"
+  "idpa_subjcr"}
+
+%% object control/raising
+defclass "lex_objcr" {
+  "pa_objcr"
+  "idpa_objcr"}
+
+%% prepositional objects 1 control/raising
+defclass "lex_pobj1cr" {
+  "pa_pobj1cr"
+  "idpa_pobj1cr"}
+
+%% no /control/raising
+defclass "lex_nocr" {
+  "pa_nocr"
+  "idpa_nocr"}
+
+defclass "lex_subc" {
+  "id_subc"
+  "pa_thc"
+  "idpa_th_sub"
+  "sc_sc"}
+
+%%
+
+defclass "aux" {
+  "lex_daux"
+  "lex_subjcr"
+  "lex_vbsec"}
+
+defclass "qaux" {
+  "lex_qaux"
+  "lex_subjcr"
+  "lex_vbsec"}
+
+defclass "paux" {
+  "lex_daux"
+  "lex_subjcr"
+  "lex_vprtc"}
+
+defclass "qpaux" {
+  "lex_qaux"
+  "lex_subjcr"
+  "lex_vprtc"}
+
+defclass "intrans" {
+  "lex_intrans"
+  "lex_nocr"
+  "clls_intrans"}
+
+defclass "trans" {
+  "lex_trans"
+  "lex_nocr"
+  "clls_trans"}
+
+defclass "ditrans" {
+  "lex_ditrans"
+  "lex_nocr"
+  "clls_ditrans"}
+
+%% subject-to-subject raising
+defclass "subjsubjrais" {
+  "lex_main"
+  "lex_vinfc"
+  "lex_subjcr"
+  "clls_subjsubjrais"}
+
+%% subject-to-object raising
+defclass "subjobjrais" {
+  "lex_intrans"
+  "id_objc"
+  "lex_vinfc"
+  "lex_objcr"
+  "clls_subjobjrais"}
+
+%% subject-to-subject control
+defclass "itrsubjsubjctrl" {
+  "lex_intrans"
+  "lex_vinfc"
+  "lex_subjcr"
+  "clls_itrsubjsubjctrl"}
+
+defclass "trsubjsubjctrl" {
+  "lex_trans"
+  "lex_vinfc"
+  "lex_subjcr"
+  "clls_trsubjsubjctrl"}
+
+%% subject-to-object control
+defclass "subjobjctrl" {
+  "lex_trans"
+  "lex_vinfc"
+  "lex_objcr"
+  "clls_subjobjctrl"}
+
+%% subject-to-prepositional object 1 control
+defclass "subjpobj1ctrl" {
+  "lex_intrans"
+  "lex_addr_pobj1"
+  "lex_vinfc"
+  "lex_pobj1cr"
+  "clls_subjpobj1ctrl"}
+
+%% subordinate clauses
+defclass "itrsubc" {
+  "lex_intrans"
+  "lex_subc"
+  "lex_nocr"
+  "clls_itrsubc"}
+
+%%%%%%%%%%%%%%%
+%% nouns
+%% proper nouns
+defclass "pnoun" W A {
+  "id_pnoun" {A: A}
+  "lp_pnoun"
+  "idlp_pnoun"
+  "pa_pnoun"
+  "idpa_pnoun"
+  "sc_pnoun"
+  "pasc_pnoun"
+  "clls_pnoun" {A: W}
+  "lex_enter" {W: W}}
+
+%% common nouns
+defclass "cnoun" Wsg Wpl A {
+  "id_cnoun" {A: A}
+  "lp_cnoun"
+  "idlp_cnoun"
+  "pa_cnoun"
+  "idpa_cnoun"
+  "sc_cnoun"
+  "pasc_cnoun"
+  "clls_cnoun" {A: Wsg}
+  ("id_sg" &
+   "lex_enter" {W: Wsg}) |
+  ("id_pl" &
+   "lex_enter" {W: Wpl})}
+
+%% personal pronouns
+defclass "perpro" W A {
+  "id_perpro" {A: A}
+  "lp_perpro"
+  "idlp_perpro"
+  "pa_perpro"
+  "idpa_perpro"
+  "sc_perpro"
+  "pasc_perpro"
+  "clls_perpro" {A: W}
+  "lex_enter" {W: W}}
+
+%% relative pronouns
+defclass "relpro" W A {
+  "id_relpro" {A: A}
+  "lp_relpro"
+  "idlp_relpro"
+  "pa_relpro"
+  "idpa_relpro"
+  "sc_relpro"
+  "pasc_relpro"
+  "clls_relpro"
+  "lex_enter" {W: W}}
+
+%% wh pronouns
+defclass "whpro" W A {
+  "id_whpro" {A: A}
+  "lp_whpro"
+  "idlp_whpro"
+  "pa_whpro"
+  "idpa_whpro"
+  "sc_whpro"
+  "pasc_whpro"
+  "clls_whpro" {A: W}
+  "lex_enter" {W: W}}
+
+%% determiners
+defclass "det" W {
+  "id_det"
+  "lp_det"
+  "idlp_det"
+  "pa_det"
+  "idpa_det"
+  "sc_det"
+  "pasc_det"
+  "clls_det" {A: W}
+  "lex_enter" {W: W}}
+
+defclass "detsg" W {
+  "det" {W: W}
+  "id_sg"}
+
+defclass "detpl" W {
+  "det" {W: W}
+  "id_pl"}
+
+%% adjectives
+defclass "adj" W {
+  "id_adj"
+  "lp_adj"
+  "idlp_adj"
+  "pa_adj"
+  "idpa_adj"
+  "sc_adj"
+  "pasc_adj"
+  "clls_adj" {A: W}
+  "lex_enter" {W: W}}
+
+%%%%%%%%%%%%%%%
+%% prepositions
+
+%% prepositional objects
+defclass "pobj" W {
+  "id_pobj" {W: W}
+  "lp_pobj"
+  "idlp_pobj"
+  "pa_pobj"
+  "idpa_pobj"
+  "sc_pobj"
+  "pasc_pobj"
+  "clls_pobj" {A: W}
+  "lex_enter" {W: W}}
+
+%% noun-modifying prepositions
+defclass "padj" W {
+  "id_padj" {W: W}
+  "lp_padj"
+  "idlp_padj"
+  "pa_padj"
+  "idpa_padj"
+  "sc_padj"
+  "pasc_padj"
+  "clls_padj" {A: W}
+  "lex_enter" {W: W}}
+
+%% verb-modifying prepositions
+defclass "lex_padv" W F {
+  "id_padv" {W: W}
+  "lp_padv" {F: F}
+  "idlp_padv"
+  "pa_padv"
+  "idpa_padv"
+  "sc_padv"
+  "pasc_padv"
+  "clls_padv" {A: W}
+  "lex_enter" {W: W}}
+
+defclass "padvp" W {
+  "lex_padv" {W: W
+              F: padvf}}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% define lexical entries
+
+%% roots
+defentry {
+  "root" {W: "."}}
+
+defentry {
+  "root" {W: "?"}}
+
+%%%%%%%%%%%%%%%
+%% verbs
+defentry {
+  "verb" {W3sg: "does"
+          Wnon3sg: "do"
+          Wprt: "done"}
+  "aux"}
+
+defentry {
+  "verb" {W3sg: "has"
+          Wnon3sg: "have"
+          Wprt: "had"}
+  "paux"}
+
+defentry {
+  "verb5" {W1sg: "am"
+           W3sg: "is"
+           Wnon13sg: "are"
+           Winf: "be"
+           Wprt: "been"}
+  "paux"}
+
+defentry {
+  "verb_qaux" {W3sg: "does"
+               Wnon3sg: "do"}
+  "qaux"}
+
+defentry {
+  "verb_qaux" {W3sg: "has"
+               Wnon3sg: "have"}
+  "qpaux"}
+
+defentry {
+  "verb_qaux3" {W1sg: "am"
+                W3sg: "is"
+                Wnon13sg: "are"}
+  "qpaux"}
+
+%%
+
+defentry {
+  "verb" {W3sg: "admires"
+          Wnon3sg: "admire"
+          Wprt: "admired"}
+  "trans"}
+
+defentry {
+  "verb" {W3sg: "appeals"
+          Wnon3sg: "appeal"
+          Wprt: "appealed"}
+  "subjpobj1ctrl"}
+
+defentry {
+  "verb" {W3sg: "assigns"
+          Wnon3sg: "assign"
+          Wprt: "assigned"}
+  "ditrans"}
+
+defentry {
+  "verb" {W3sg: "believes"
+          Wnon3sg: "believe"
+          Wprt: "believed"}
+  "subjobjrais" | "itrsubc"}
+
+
+defentry {
+  "verb" {W3sg: "directs"
+          Wnon3sg: "direct"
+          Wprt: "directed"}
+  "trans"}
+
+defentry {
+  "verb" {W3sg: "eats"
+          Wnon3sg: "eat"
+          Wprt: "eaten"}
+  "trans"}
+
+defentry {
+  "verb" {W3sg: "expects"
+          Wnon3sg: "expect"
+          Wprt: "expected"}
+  "subjobjctrl"}
+
+defentry {
+  "verb" {W3sg: "finds"
+          Wnon3sg: "find"
+          Wprt: "found"}
+  "trans"}
+
+defentry {
+  "verb" {W3sg: "gives"
+          Wnon3sg: "give"
+          Wprt: "given"}
+  "ditrans"}
+
+defentry {
+  "verb" {W3sg: "hates"
+          Wnon3sg: "hate"
+          Wprt: "hated"}
+  "trans"}
+
+defentry {
+  "verb" {W3sg: "hums"
+          Wnon3sg: "hum"
+          Wprt: "hummed"}
+  "intrans"}
+
+defentry {
+  "verb" {W3sg: "laughs"
+          Wnon3sg: "laugh"
+          Wprt: "laughed"}
+  "intrans"}
+
+defentry {
+  "verb" {W3sg: "likes"
+          Wnon3sg: "like"
+          Wprt: "liked"}
+  "trans"}
+
+defentry {
+  "verb" {W3sg: "loves"
+          Wnon3sg: "love"
+          Wprt: "loved"}
+  "trans"}
+
+defentry {
+  "verb" {W3sg: "marries"
+          Wnon3sg: "marry"
+          Wprt: "married"}
+  "trans"}
+
+defentry {
+  "verb" {W3sg: "persuades"
+          Wnon3sg: "persuade"
+          Wprt: "persuaded"}
+  "subjobjctrl"}
+
+defentry {
+  "verb" {W3sg: "promises"
+          Wnon3sg: "promise"
+          Wprt: "promised"}
+  "trsubjsubjctrl"}
+
+defentry {
+  "verb" {W3sg: "proves"
+          Wnon3sg: "prove"
+          Wprt: "proven"}
+  "trans"}
+
+defentry {
+  "verb" {W3sg: "reads"
+          Wnon3sg: "read"
+          Wprt: "read"}
+  ( "intrans" | "trans" )}
+
+defentry {
+  "verb" {W3sg: "says"
+          Wnon3sg: "say"
+          Wprt: "said"}
+  "itrsubc"}
+
+defentry {
+  "verb" {W3sg: "sees"
+          Wnon3sg: "see"
+          Wprt: "seen"}
+  "trans"}
+
+defentry {
+  "verb" {W3sg: "seems"
+          Wnon3sg: "seem"
+          Wprt: "seemed"}
+  "subjsubjrais"}
+
+defentry {
+  "verb" {W3sg: "sleeps"
+          Wnon3sg: "sleep"
+          Wprt: "slept"}
+  "intrans"}
+
+defentry {
+  "verb" {W3sg: "smiles"
+          Wnon3sg: "smile"
+          Wprt: "smiled"}
+  "intrans"}
+
+defentry {
+  "verb" {W3sg: "thinks"
+          Wnon3sg: "think"
+          Wprt: "thought"}
+  "itrsubc"}
+
+defentry {
+  "verb" {W3sg: "tries"
+          Wnon3sg: "try"
+          Wprt: "tried"}
+  "itrsubjsubjctrl"}
+
+defentry {
+  "verb" {W3sg: "understands"
+          Wnon3sg: "understand"
+          Wprt: "understood"}
+  ( "intrans" | "trans" )}
+
+defentry {
+  "verb" {W3sg: "visits"
+          Wnon3sg: "visit"
+          Wprt: "visited"}
+  "trans"}
+
+defentry {
+  "verb" {W3sg: "wants"
+          Wnon3sg: "want"
+          Wprt: "wanted"}
+  "itrsubjsubjctrl"}
+
+%% adverbs
+defentry {
+  "advf" {W: "always"}}
+
+defentry {
+  "advp" {W: "behind"}}
+
+defentry {
+  "advp" {W: "carefully"}}
+
+defentry {
+  "advp" {W: "here"}}
+
+defentry {
+  "advf" {W: "never"}}
+
+defentry {
+  "advf" {W: "not"}}
+
+defentry {
+  "advt" {W: "now"}}
+
+defentry {
+  "advf" {W: "often"}}
+
+defentry {
+  "advt" {W: "recently"}}
+
+defentry {
+  "advp" {W: "slowly"}}
+
+defentry {
+  "advt" {W: "sometimes"}}
+
+defentry {
+  "advt" {W: "then"}}
+
+defentry {
+  "advp" {W: "there"}}
+
+defentry {
+  "advt" {W: "today"}}
+
+defentry {
+  "advf" {W: "usually"}}
+
+defentry {
+  "advp" {W: "violently"}}
+
+defentry {
+  "advt" {W: "yesterday"}}
+
+%% particles
+defentry {
+  "part" {W: "to"}}
+
+%% complementizers
+defentry {
+  "comp" {W: "that"}}
+
+%%%%%%%%%%%%%%%
+%% proper nouns
+
+defentry {
+  "pnoun" {W: "annie"
+           A: ($ third & sg & fem)}}
+
+defentry {
+  "pnoun" {W: "fred"
+           A: ($ third & sg & masc)}}
+
+defentry {
+  "pnoun" {W: "john"
+           A: ($ third & sg & masc)}}
+
+defentry {
+  "pnoun" {W: "manny"
+           A: ($ third & sg & masc)}}
+
+defentry {
+  "pnoun" {W: "marcel"
+           A: ($ third & sg & masc)}}
+
+defentry {
+  "pnoun" {W: "mary"
+           A: ($ third & sg & fem)}}
+
+defentry {
+  "pnoun" {W: "peter"
+           A: ($ third & sg & fem)}}
+
+defentry {
+  "pnoun" {W: "completeness"
+           A: ($ third & pl & neut)}}
+
+defentry {
+  "pnoun" {W: "saarbruecken"
+           A: ($ third & sg & neut)}}
+
+defentry {
+  "pnoun" {W: "spaghetti"
+           A: ($ third & pl & neut)}}
+
+%% common nouns
+defentry {
+  "cnoun" {Wsg: "basket"
+           Wpl: "baskets"
+           A: ($ third & neut)}}
+
+defentry {
+  "cnoun" {Wsg: "book"
+           Wpl: "books"
+           A: ($ third & neut)}}
+ 
+defentry {
+  "cnoun" {Wsg: "company"
+           Wpl: "companies"
+           A: ($ third & neut)}}
+
+defentry {
+  "cnoun" {Wsg: "department"
+           Wpl: "departments"
+           A: ($ third & neut)}}
+
+defentry {
+  "cnoun" {Wsg: "man"
+           Wpl: "men"
+           A: ($ third & masc)}}
+
+defentry {
+  "cnoun" {Wsg: "musical"
+           Wpl: "musicals"
+           A: ($ third & neut)}}
+
+defentry {
+  "cnoun" {Wsg: "product"
+           Wpl: "products"
+           A: ($ third & neut)}}
+
+defentry {
+  "cnoun" {Wsg: "politician"
+           Wpl: "politicians"
+           A: ($ third & (masc|fem))}}
+
+defentry {
+  "cnoun" {Wsg: "professor"
+           Wpl: "professors"
+           A: ($ third & (masc|fem))}}
+
+defentry {
+  "cnoun" {Wsg: "programmer"
+           Wpl: "programmers"
+           A: ($ third & (masc|fem))}}
+
+defentry {
+  "cnoun" {Wsg: "researcher"
+           Wpl: "researchers"
+           A: ($ third & (masc|fem))}}
+
+defentry {
+  "cnoun" {Wsg: "sample"
+           Wpl: "samples"
+           A: ($ third & neut)}}
+
+defentry {
+  "cnoun" {Wsg: "student"
+           Wpl: "students"
+           A: ($ third & (masc|fem))}}
+
+defentry {
+  "cnoun" {Wsg: "task"
+           Wpl: "tasks"
+           A: ($ third & neut)}}
+
+defentry {
+  "cnoun" {Wsg: "telescope"
+           Wpl: "telescopes"
+           A: ($ third & neut)}}
+
+defentry {
+  "cnoun" {Wsg: "university"
+           Wpl: "universities"
+           A: ($ third & neut)}}
+
+defentry {
+  "cnoun" {Wsg: "vegetable"
+           Wpl: "vegetables"
+           A: ($ third & neut)}}
+
+defentry {
+  "cnoun" {Wsg: "woman"
+           Wpl: "women"
+           A: ($ third & fem)}}
+
+%% personal pronouns
+
+defentry {
+  "perpro" {W: "i"
+            A: ($ first & sg & nom)}}
+
+defentry {
+  "perpro" {W: "you"
+            A: ($ second)}}
+
+defentry {
+  "perpro" {W: "he"
+            A: ($ masc & third & sg & nom)}}
+
+defentry {
+  "perpro" {W: "she"
+            A: ($ fem & third & sg & nom)}}
+
+defentry {
+  "perpro" {W: "it"
+            A: ($ neut & third & sg)}}
+
+defentry {
+  "perpro" {W: "we"
+            A: ($ first & pl & nom)}}
+
+defentry {
+  "perpro" {W: "they"
+            A: ($ third & pl & nom)}}
+
+defentry {
+  "perpro" {W: "me"
+            A: ($ first & sg & acc)}}
+
+defentry {
+  "perpro" {W: "him"
+            A: ($ masc & third & sg & acc)}}
+
+defentry {
+  "perpro" {W: "her"
+            A: ($ fem & third & sg & acc)}}
+
+defentry {
+  "perpro" {W: "us"
+            A: ($ first & pl & acc)}}
+
+defentry {
+  "perpro" {W: "them"
+            A: ($ third & pl & acc)}}
+
+%% relative pronouns
+defentry {
+  "relpro" {W: "who"
+            A: ($ third & (masc|fem))}}
+
+defentry {
+  "relpro" {W: "whom"
+            A: ($ third & sg & (masc|fem) & acc)}}
+
+defentry {
+  "relpro" {W: "which"
+            A: ($ third & neut)}}
+
+defentry {
+  "relpro" {W: "that"
+            A: ($ third)}}
+
+%% wh pronouns
+defentry {
+  "whpro" {W: "who"
+           A: ($ third & (masc|fem))}}
+defentry {
+  "whpro" {W: "whom"
+           A: ($ third & sg & (masc|fem) & acc)}}
+
+defentry {
+  "whpro" {W: "what"
+           A: ($ third & neut)}}
+
+%% determiners
+defentry {
+  "detsg" {W: "a"}}
+
+defentry {
+  "detpl" {W: "all"}}
+
+defentry {
+  "detsg" {W: "every"}}
+
+defentry {
+  "detpl" {W: "most"}}
+
+defentry {
+  "det" {W: "some"}}
+
+defentry {
+  "det" {W: "the"}}
+
+%% adjectives
+defentry {
+  "adj" {W: "big"}}
+
+defentry {
+  "adj" {W: "foreign"}}
+
+defentry {
+  "adj" {W: "good"}}
+
+defentry {
+  "adj" {W: "little"}}
+
+defentry {
+  "adj" {W: "nice"}}
+
+defentry {
+  "adj" {W: "pretty"}}
+
+%%%%%%%%%%%%%%%
+%% prepositions
+defentry {
+  "pobj" {W: "at"}}
+
+defentry {
+  "pobj" {W: "by"}}
+
+defentry {
+  "padvp" {W: "in"}}
+
+defentry {
+  "padj" {W: "of"}}
+
+defentry {
+  "pobj" {W: "to"}}
+
+defentry {
+  "padj" {W: "with"}}
+
+defentry {
+  "padvp" {W: "with"}}

@@ -1,0 +1,395 @@
+usedim id
+usedim lp
+usedim pa
+usedim lex
+%% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% define dimension id
+defdim id {
+  %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%
+  %% define types
+  defentrytype "id.entry"
+  deflabeltype "id.label"
+  deftype "id.entry" {in: valency("id.label")
+                      out: valency("id.label")
+                      end: vec("id.label" set("lp.label"))
+                      outgroups: vec("id.label" iset("lex.group"))
+                      word: string}
+  deftype "id.label" {det obj part pcomp pobj pmod subj del root}
+  %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%
+  %% use principles
+  useprinciple "principle.graph" {
+    dims {D: id}}
+  useprinciple "principle.tree" {
+    dims {D: id}}
+  useprinciple "principle.valency" {
+    dims {D: id}}
+  useprinciple "principle.linkingEnd" {
+    dims {D1: id
+          D2: lp
+          D3: id}}
+  useprinciple "principle.government1" {
+    dims {D: id
+          D1: lex}
+    args {Agr2: _.D1.entry.group
+          Govern: ^.D.entry.outgroups}}
+  %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%
+  %% use and choose outputs
+  output "output.latex"
+  output "output.latex1"
+  output "output.pretty"
+}
+%% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% define dimension lp
+defdim lp {
+  %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%
+  %% define types
+  defentrytype "lp.entry"
+  deflabeltype "lp.label"
+  deftype "lp.entry" {in: valency("lp.label")
+                      out: valency("lp.label")
+                      on: iset("lp.label")
+                      outgroups: vec("lp.label" iset("lex.group"))
+                      word: string}
+  deftype "lp.label" {subjf finf objf partf pobjf
+                      detf nounf pmodf
+                      prepf pcompf
+                      del root root1}
+  %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%
+  %% use principles
+  useprinciple "principle.graph" {
+    dims {D: lp}}
+  useprinciple "principle.tree" {
+    dims {D: lp}}
+  useprinciple "principle.valency" {
+    dims {D: lp}}
+  useprinciple "principle.order" {
+    dims {D: lp}
+    args {Order:     [subjf finf objf partf pobjf
+                      detf nounf pmodf
+                      prepf pcompf
+                      del root root1]
+          Yields: true}}
+  useprinciple "principle.projectivity" {
+    dims {D: lp}}
+  useprinciple "principle.climbing" {
+    dims {D1: lp
+          D2: id}}
+  useprinciple "principle.government1" {
+    dims {D: lp
+          D1: lex}
+    args {Agr2: _.D1.entry.group
+          Govern: ^.D.entry.outgroups}}
+  %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%
+  %% use and choose outputs
+  output "output.latex"
+  output "output.latex1"
+  output "output.pretty"
+}
+%% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% define dimension pa
+defdim pa {
+  %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%
+  %% define types
+  defentrytype "pa.entry"
+  deflabeltype "pa.label"
+  deftype "pa.entry" {in: valency("pa.label")
+                      out: valency("pa.label")
+                      end: vec("pa.label" set("id.label"))
+                      outgroups: vec("pa.label" iset("lex.group"))
+                      word: string}
+  deftype "pa.label" {arg1 arg2 del root}
+  %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%
+  %% use principles
+  useprinciple "principle.graph" {
+    dims {D: pa}}
+  useprinciple "principle.tree" {
+    dims {D: pa}}
+  useprinciple "principle.valency" {
+    dims {D: pa}}
+  useprinciple "principle.linkingEnd" {
+    dims {D1: pa
+          D2: id
+          D3: pa}}
+  useprinciple "principle.government1" {
+    dims {D: pa
+          D1: lex}
+    args {Agr2: _.D1.entry.group
+          Govern: ^.D.entry.outgroups}}
+  %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%
+  %% use and choose outputs
+  output "output.latex"
+  output "output.latex1"
+  output "output.pretty"
+}
+%% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% define dimension lex
+defdim lex {
+  %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%
+  %% define types
+  deftype "lex.group" {rootg prong
+                       date1g date2g
+                       argue1g argue2g}
+  defentrytype {word: string
+                group: "lex.group"}
+  %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%
+  %% use principles
+  useprinciple "principle.entries" {}
+  %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%
+  %% use and choose outputs
+  output "output.dags"
+  output "output.dags1"
+  output "output.dags2"
+  %%
+  useoutput "output.dags1"
+}
+%% %%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% lexicon
+defclass "ROOT" Word {
+  dim id {in: {}
+          out: {del* root}
+          word: Word}
+  dim lp {in: {}
+          on: {root1}
+          out: {del* root}
+          word: Word}
+  dim pa {in: {}
+          out: {del* root*}
+          word: Word}
+  dim lex {word: Word
+           group: rootg}}
+
+defclass "PRON" Word {
+  dim id {in: {root?}
+          out: {}
+          word: Word}
+  dim lp {in: {root?}
+          on: {nounf}
+          word: Word}
+  dim pa {in: {arg1* arg2*}
+          word: Word}
+  dim lex {word: Word
+           group: prong}}
+
+defclass "PRON_NOM" Word {
+  "PRON" {Word: Word}
+  dim id {in: {subj?}}
+  dim lp {in: {subjf?}}}
+
+defclass "PRON_ACC" Word {
+  "PRON" {Word: Word}
+  dim id {in: {obj? pcomp?}}
+  dim lp {in: {objf? pcompf?}}}
+
+defentry { "ROOT" {Word: "."} }
+
+defentry { "PRON_NOM" {Word: "He"} }
+defentry { "PRON_ACC" {Word: "her"} }
+
+%% date1: "dates"
+defclass "date1g_1" SynWord SemWord {
+  dim id {in: {root?}
+          out: {subj obj}
+          end: {subj: {subjf}}
+          word: SynWord}
+  dim lp {in: {root?}
+          out: {subjf objf}
+          on: {finf}
+          word: SynWord}
+  dim pa {in: {root?}
+          out: {arg1 arg2}
+          end: {arg1: {subj}
+                arg2: {obj}}
+          word: SemWord}
+  dim lex {word: SynWord
+           group: date1g}}
+
+defclass "date1g_2" SynWord SemWord {
+  dim id {in: {del?}
+          out: {}
+          word: SynWord}
+  dim lp {in: {del?}
+          out: {}
+          on: {del}
+          word: SynWord}
+  dim pa {in: {del?}
+          out: {}
+          word: SemWord}
+  dim lex {word: SynWord
+           group: date1g}}
+
+defentry { "date1g_1" {SynWord: "dates" SemWord: "date1"} }
+defentry { "date1g_2" {SynWord: "(del)" SemWord: "date2"} }
+
+%% date2: "takes out"
+defclass "date2g_1" SynWord SemWord {
+  dim id {in: {root?}
+          out: {subj obj part}
+          end: {subj: {subjf}}
+          outgroups: {part: {date2g}}
+          word: SynWord}
+  dim lp {in: {root?}
+          out: {subjf objf partf}
+          on: {finf}
+          outgroups: {partf: {date2g}}
+          word: SynWord}
+  dim pa {in: {root?}
+          out: {arg1 arg2}
+          end: {arg1: {subj}
+                arg2: {obj}}
+          word: SemWord}
+  dim lex {word: SynWord
+           group: date2g}}
+
+defclass "date2g_2" SynWord SemWord {
+  dim id {in: {part?}
+          out: {}
+          word: SynWord}
+  dim lp {in: {partf?}
+          out: {}
+          on: {partf}
+          word: SynWord}
+  dim pa {in: {del?}
+          out: {}
+          word: SemWord}
+  dim lex {word: SynWord
+           group: date2g}}
+
+defentry { "date2g_1" {SynWord: "takes" SemWord: "date1"} }
+defentry { "date2g_2" {SynWord: "out" SemWord: "date2"} }
+
+%% argues with
+defclass "argue1g_1" SynWord SemWord {
+  dim id {in: {root?}
+          out: {subj pobj}
+          outgroups: {pobj: {argue1g}}
+          word: SynWord}
+  dim lp {in: {root?}
+          out: {subjf pobjf}
+          on: {finf}
+          outgroups: {pobjf: {argue1g}}
+          word: SynWord}
+  dim pa {in: {root?}
+          out: {arg1 arg2}
+          end: {arg1: {subj}
+                arg2: {pcomp}}
+          word: SemWord}
+  dim lex {word: SynWord
+           group: argue1g}}
+
+defclass "argue1g_2" SynWord SemWord {
+  dim id {in: {pobj?}
+          out: {pcomp}
+          word: SynWord}
+  dim lp {in: {pobjf?}
+          out: {pcompf}
+          on: {prepf}
+          word: SynWord}
+  dim pa {in: {del?}
+          out: {}
+          word: SemWord}
+  dim lex {word: SynWord
+           group: argue1g}}
+
+defclass "argue1g_3" SynWord SemWord {
+  dim id {in: {del?}
+          out: {}
+          word: SynWord}
+  dim lp {in: {del?}
+          out: {}
+          on: {del}
+          word: SynWord}
+  dim pa {in: {del?}
+          out: {}
+          word: SemWord}
+  dim lex {word: SynWord
+           group: argue1g}}
+
+defclass "argue1g_4" SynWord SemWord {
+  dim id {in: {del?}
+          out: {}
+          word: SynWord}
+  dim lp {in: {del?}
+          out: {}
+          on: {del}
+          word: SynWord}
+  dim pa {in: {del?}
+          out: {}
+          word: SemWord}
+  dim lex {word: SynWord
+           group: argue1g}}
+
+defentry { "argue1g_1" {SynWord: "argues" SemWord: "argue1"} }
+defentry { "argue1g_2" {SynWord: "with" SemWord: "argue2"} }
+defentry { "argue1g_3" {SynWord: "(del)" SemWord: "argue3"} }
+defentry { "argue1g_4" {SynWord: "(del)" SemWord: "argue4"} }
+
+%% has an argument with
+defclass "argue2g_1" SynWord SemWord {
+  dim id {in: {root?}
+          out: {subj obj}
+          end: {subj: {subjf}}
+          outgroups: {obj: {argue2g}}
+          word: SynWord}
+  dim lp {in: {root?}
+          out: {subjf objf}
+          on: {finf}
+          outgroups: {objf: {argue2g}}
+          word: SynWord}
+  dim pa {in: {del?}
+          out: {}
+          word: SemWord}
+  dim lex {word: SynWord
+           group: argue2g}}
+
+defclass "argue2g_2" SynWord SemWord {
+  dim id {in: {det?}
+          out: {}
+          word: SynWord}
+  dim lp {in: {detf?}
+          out: {}
+          on: {detf}
+          word: SynWord}
+  dim pa {in: {del?}
+          out: {}
+          word: SemWord}
+  dim lex {word: SynWord
+           group: argue2g}}
+
+defclass "argue2g_3" SynWord SemWord {
+  dim id {in: {obj?}
+          out: {det pmod}
+          outgroups: {det: {argue2g}
+                      pmod: {argue2g}}
+          word: SynWord}
+  dim lp {in: {objf?}
+          out: {detf pmodf}
+          on: {nounf}
+          outgroups: {detf: {argue2g}
+                      pmodf: {argue2g}}
+          word: SynWord}
+  dim pa {in: {root?}
+          out: {arg1 arg2}
+          end: {arg1: {subj}
+                    arg2: {pcomp}}
+          word: SemWord}
+  dim lex {word: SynWord
+           group: argue2g}}
+
+defclass "argue2g_4" SynWord SemWord {
+  dim id {in: {pmod?}
+          out: {pcomp}
+          word: SynWord}
+  dim lp {in: {pmodf?}
+          out: {pcompf}
+          on: {prepf}
+          word: SynWord}
+  dim pa {in: {del?}
+          out: {}
+          word: SemWord}
+  dim lex {word: SynWord
+           group: argue2g}}
+
+defentry { "argue2g_1" {SynWord: "has" SemWord: "argue1"} }
+defentry { "argue2g_2" {SynWord: "an" SemWord: "argue2"} }
+defentry { "argue2g_3" {SynWord: "argument" SemWord: "argue3"} }
+defentry { "argue2g_4" {SynWord: "with" SemWord: "argue4"} }

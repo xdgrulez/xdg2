@@ -1,0 +1,70 @@
+--
+diss.ul
+--
+
+ID:
+
+adj -> amod
+adv -> advmod
+comp -> ccomp
+det = det
+iobj = iobj
+obj = obj
+part -> mark
+pmod -> case
+pobj1 -> xcomp
+pobj2 ?
+prepc -> nmod
+rel -> acl:rel
+root -> root
+sub -> acl
+subj -> nsubj
+vbse -> ccomp
+vinf -> xcomp
+vprt -> ccomp
+
+--
+MWE.ul
+--
+
+det = det
+obj = obj
+part -> mark
+pcomp -> obl
+pobj -> nmod
+pmod -> advmod
+subj -> nsubj
+del -> ?
+root = root
+
+--
+Labels for our example grammar
+--
+
+https://universaldependencies.org/u/dep/
+
+* Core arguments:
+  - Nominals: nsubj, obj, iobj
+  - Clauses: csubj, ccomp, xcomp (e.g. indirect object realized by a PP)
+
+* Non-core dependents:
+  - Nominals: obj, vocative ("Mary, how are you", are -> Mary), expl (There <- is), *dislocated
+  - Clauses: advcl ("He was upset when I talked to him", was -> when)
+  - Modifier words: advmod, discourse (e.g. ":)")
+  - Function words: aux ("Reagan has died", died -> has), cop, mark
+
+* Nominal dependents:
+  - Nominals: nmod ("the office of the chair", office -> chair), appos ("Sam, my brother, arrived", Sam -> brother), nummod ("Sam at 3 sheep", sheep -> 3)
+  - Clauses: acl (adnominal clause, "the issues as he sees them", issues -> sees)
+  - Modifier words: amod ("There is nothing wrong with it", nothing -> wrong)
+  - Function words: det, *clf, case ("the office of the chair", chair -> of)
+
+* Coordination: conj ("Bill is big and honest", big -> honest), cc (conjunct -> conjunction)
+
+* Headless: fixed (fixed MWE, "I like dogs as1 well as2 cats", as1 -> well, as1 -> as2), flat ("Hillary Rodham Clinton", Hillary -> Rodham, Hillary -> Clinton)
+
+* Loose: list ("Steve Jones sj@abc.xyz University of Arizona", Steve -> sj@abc.xyz, Steve -> University), parataxis ("Divided world the CIA", world -> CIA)
+
+* Special: compound ("phone book", book -> phone), orphan ("Marie won gold and Peter bronze", Peter -> bronze), goeswith ("never the less", never -> the, never -> less), reparandum ("Go to the righ- to the left", left -> righ-)
+
+* Other: punct (go home!, go -> !), root (fake root node), dep (catchall dependency label)
