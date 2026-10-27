@@ -1,0 +1,78 @@
+{
+  "language": "de",
+  "source": "xdg2 generic base-lexicon seed",
+  "entries": [
+    {
+      "entry_id": "schenken.v.gift",
+      "lemma": "schenken",
+      "pos": "VERB",
+      "features": {},
+      "sense": "caused-transfer-as-gift",
+      "definition": "to cause an object to become the recipient's possession as a gift",
+      "semantic_type": "transfer_event"
+    },
+    {
+      "entry_id": "kaufen.v.purchase",
+      "lemma": "kaufen",
+      "pos": "VERB",
+      "features": {},
+      "sense": "purchase",
+      "definition": "to obtain something in exchange for money",
+      "semantic_type": "purchase_event"
+    },
+    {
+      "entry_id": "leihen.v.lend",
+      "lemma": "leihen",
+      "pos": "VERB",
+      "features": {},
+      "sense": "lend",
+      "definition": "to let another person use something temporarily",
+      "semantic_type": "transfer_event"
+    },
+    {
+      "entry_id": "fahren.v.drive",
+      "lemma": "fahren",
+      "pos": "VERB",
+      "features": {},
+      "sense": "drive",
+      "definition": "to control and move a vehicle",
+      "semantic_type": "vehicle_motion_event"
+    },
+    {
+      "entry_id": "fahren.v.travel",
+      "lemma": "fahren",
+      "pos": "VERB",
+      "features": {},
+      "sense": "travel-by-vehicle",
+      "definition": "to travel from one place to another by vehicle",
+      "semantic_type": "vehicle_motion_event"
+    },
+    {
+      "entry_id": "auto.n.vehicle",
+      "lemma": "Auto",
+      "pos": "NOUN",
+      "features": {"gender": "neut", "number": "sg"},
+      "sense": "motor-vehicle",
+      "definition": "a road vehicle powered by an engine",
+      "semantic_type": "vehicle"
+    },
+    {
+      "entry_id": "bank.n.financial-institution",
+      "lemma": "Bank",
+      "pos": "NOUN",
+      "features": {"gender": "fem", "number": "sg"},
+      "sense": "financial-institution",
+      "definition": "an organization that holds money and provides financial services",
+      "semantic_type": "financial_institution"
+    },
+    {
+      "entry_id": "bank.n.seat",
+      "lemma": "Bank",
+      "pos": "NOUN",
+      "features": {"gender": "fem", "number": "sg"},
+      "sense": "bench",
+      "definition": "a long seat for several people, often placed outdoors",
+      "semantic_type": "seat"
+    }
+  ]
+}

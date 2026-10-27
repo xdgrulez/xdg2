@@ -1,0 +1,67 @@
+{
+  "language": "en",
+  "constructions": [
+    {
+      "construction_id": "en.infinitive.to_give",
+      "pa_fragment": {
+        "nodes": [
+          {"id": "cause", "kind": "predicate", "predicate": "cause"},
+          {"id": "transfer", "kind": "predicate", "predicate": "transfer"}
+        ],
+        "thematic_edges": [
+          {"source": "cause", "role": "agent", "target": "$arg0"},
+          {"source": "cause", "role": "theme", "target": "transfer"},
+          {"source": "transfer", "role": "theme", "target": "$arg1"},
+          {"source": "transfer", "role": "recipient", "target": "$arg2"}
+        ]
+      },
+      "required_id_slot": "to_infinitive",
+      "components": [
+        {
+          "component_id": "to",
+          "entry_id": "en.to.infinitive-marker",
+          "surface": "to",
+          "pa_nodes": []
+        },
+        {
+          "component_id": "give",
+          "entry_id": "en.give.verb",
+          "surface": "give",
+          "pa_nodes": ["cause", "transfer"]
+        }
+      ],
+      "yield_order": ["to", "give"],
+      "id_edges": [
+        {"head": "give", "dependent": "to", "relation": "mark"}
+      ],
+      "derivation_operation": "substitute"
+    },
+    {
+      "construction_id": "en.bare_infinitive.give",
+      "pa_fragment": {
+        "nodes": [
+          {"id": "cause", "kind": "predicate", "predicate": "cause"},
+          {"id": "transfer", "kind": "predicate", "predicate": "transfer"}
+        ],
+        "thematic_edges": [
+          {"source": "cause", "role": "agent", "target": "$arg0"},
+          {"source": "cause", "role": "theme", "target": "transfer"},
+          {"source": "transfer", "role": "theme", "target": "$arg1"},
+          {"source": "transfer", "role": "recipient", "target": "$arg2"}
+        ]
+      },
+      "required_id_slot": "bare_infinitive",
+      "components": [
+        {
+          "component_id": "give",
+          "entry_id": "en.give.verb",
+          "surface": "give",
+          "pa_nodes": ["cause", "transfer"]
+        }
+      ],
+      "yield_order": ["give"],
+      "id_edges": [],
+      "derivation_operation": "substitute"
+    }
+  ]
+}

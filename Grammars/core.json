@@ -1,0 +1,15 @@
+{
+  "language": "de",
+  "frames": {
+    "transfer": {
+      "ID": ["subj", "iobj", "obj"],
+      "PA": ["agent", "recipient", "theme"],
+      "LINK": {"subj": "agent", "iobj": "recipient", "obj": "theme"}
+    },
+    "motion": {
+      "ID": ["subj", "obj", "obl"],
+      "PA": ["agent", "theme", "goal"],
+      "LINK": {"subj": "agent", "obj": "theme", "obl": "goal"}
+    }
+  }
+}

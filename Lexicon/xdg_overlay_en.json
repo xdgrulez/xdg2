@@ -1,0 +1,51 @@
+{
+  "en.to.infinitive-marker": {
+    "ID": {"category": "marker"},
+    "PA": {"predicates": []},
+    "LINK": []
+  },
+  "en.give.verb": {
+    "ID": {
+      "category": "verb",
+      "licenses": [
+        {"role": "subj", "dependent_type": "person"},
+        {"role": "obj", "dependent_type": "transfer_theme"},
+        {"role": "iobj", "dependent_type": "person"},
+        {"role": "mark", "dependent_type": "grammatical_marker"}
+      ]
+    },
+    "PA": {
+      "predicates": ["cause", "transfer"],
+      "licenses": [
+        {"role": "agent", "argument_type": "person"},
+        {"role": "theme", "argument_type": "event_or_entity"},
+        {"role": "recipient", "argument_type": "person"}
+      ]
+    },
+    "LINK": [
+      {"id_role": "subj", "pa_predicate": "cause", "pa_role": "agent"},
+      {"id_role": "obj", "pa_predicate": "transfer", "pa_role": "theme"},
+      {"id_role": "iobj", "pa_predicate": "transfer", "pa_role": "recipient"}
+    ]
+  },
+  "en.want.verb": {
+    "ID": {
+      "category": "verb",
+      "licenses": [
+        {"role": "subj", "dependent_type": "person"},
+        {"role": "xcomp", "dependent_type": "infinitive_predicate"}
+      ]
+    },
+    "PA": {
+      "predicates": ["want"],
+      "licenses": [
+        {"role": "experiencer", "argument_type": "person"},
+        {"role": "theme", "argument_type": "event"}
+      ]
+    },
+    "LINK": [
+      {"id_role": "subj", "pa_predicate": "want", "pa_role": "experiencer"},
+      {"id_role": "xcomp", "pa_predicate": "want", "pa_role": "theme"}
+    ]
+  }
+}

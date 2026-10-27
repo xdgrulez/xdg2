@@ -1,0 +1,33 @@
+{
+  "language": "en",
+  "source": "xdg2 generic English base-lexicon seed",
+  "entries": [
+    {
+      "entry_id": "en.to.infinitive-marker",
+      "lemma": "to",
+      "pos": "PARTICLE",
+      "features": {"form": "infinitive-marker"},
+      "sense": "infinitive-marker",
+      "definition": "marks an infinitival complement",
+      "semantic_type": "grammatical_marker"
+    },
+    {
+      "entry_id": "en.give.verb",
+      "lemma": "give",
+      "pos": "VERB",
+      "features": {"form": "base"},
+      "sense": "caused-transfer",
+      "definition": "cause a transfer of an entity to a recipient",
+      "semantic_type": "transfer_event"
+    },
+    {
+      "entry_id": "en.want.verb",
+      "lemma": "want",
+      "pos": "VERB",
+      "features": {"form": "base"},
+      "sense": "want",
+      "definition": "desire or intend an event or entity",
+      "semantic_type": "desire_event"
+    }
+  ]
+}

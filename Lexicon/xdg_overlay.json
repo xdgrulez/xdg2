@@ -1,0 +1,134 @@
+{
+  "schenken.v.gift": {
+    "frame": "transfer",
+    "ID": {
+      "licenses": [
+        {"role": "subj", "dependent_type": "person"},
+        {"role": "iobj", "dependent_type": "person"},
+        {"role": "obj", "dependent_type": "asset"}
+      ]
+    },
+    "PA": {
+      "predicates": ["cause", "transfer"],
+      "licenses": [
+        {"role": "agent", "argument_type": "person"},
+        {"role": "recipient", "argument_type": "person"},
+        {"role": "theme", "argument_type": "asset"}
+      ]
+    },
+    "LINK": [
+      {"id_role": "subj", "pa_role": "agent"},
+      {"id_role": "iobj", "pa_role": "recipient"},
+      {"id_role": "obj", "pa_role": "theme"}
+    ],
+    "realizes": ["cause", "transfer"],
+    "event_structure": [["cause", "causes", "transfer"]]
+  },
+  "kaufen.v.purchase": {
+    "frame": "purchase",
+    "ID": {
+      "licenses": [
+        {"role": "subj", "dependent_type": "person"},
+        {"role": "obj", "dependent_type": "asset"}
+      ]
+    },
+    "PA": {
+      "predicates": ["purchase"],
+      "licenses": [
+        {"role": "agent", "argument_type": "person"},
+        {"role": "theme", "argument_type": "asset"}
+      ]
+    },
+    "LINK": [
+      {"id_role": "subj", "pa_role": "agent"},
+      {"id_role": "obj", "pa_role": "theme"}
+    ]
+  },
+  "leihen.v.lend": {
+    "frame": "transfer",
+    "realizes": ["lend"],
+    "ID": {
+      "licenses": [
+        {"role": "subj", "dependent_type": "person"},
+        {"role": "iobj", "dependent_type": "person"},
+        {"role": "obj", "dependent_type": "asset"}
+      ]
+    },
+    "PA": {
+      "predicates": ["lend"],
+      "licenses": [
+        {"role": "agent", "argument_type": "person"},
+        {"role": "recipient", "argument_type": "person"},
+        {"role": "theme", "argument_type": "asset"}
+      ]
+    },
+    "LINK": [
+      {"id_role": "subj", "pa_role": "agent"},
+      {"id_role": "iobj", "pa_role": "recipient"},
+      {"id_role": "obj", "pa_role": "theme"}
+    ]
+  },
+  "fahren.v.drive": {
+    "frame": "motion",
+    "realizes": ["drive"],
+    "ID": {
+      "licenses": [
+        {"role": "subj", "dependent_type": "person"},
+        {"role": "obj", "dependent_type": "vehicle"},
+        {"role": "obl", "dependent_type": "location"}
+      ]
+    },
+    "PA": {
+      "predicates": ["drive"],
+      "licenses": [
+        {"role": "agent", "argument_type": "person"},
+        {"role": "theme", "argument_type": "vehicle"},
+        {"role": "goal", "argument_type": "location"}
+      ]
+    },
+    "LINK": [
+      {"id_role": "subj", "pa_role": "agent"},
+      {"id_role": "obj", "pa_role": "theme"},
+      {"id_role": "obl", "pa_role": "goal"}
+    ]
+  },
+  "fahren.v.travel": {
+    "frame": "motion",
+    "realizes": ["travel"],
+    "ID": {
+      "licenses": [
+        {"role": "subj", "dependent_type": "person"},
+        {"role": "obj", "dependent_type": "vehicle"},
+        {"role": "obl", "dependent_type": "location"}
+      ]
+    },
+    "PA": {
+      "predicates": ["travel"],
+      "licenses": [
+        {"role": "agent", "argument_type": "person"},
+        {"role": "theme", "argument_type": "vehicle"},
+        {"role": "goal", "argument_type": "location"}
+      ]
+    },
+    "LINK": [
+      {"id_role": "subj", "pa_role": "agent"},
+      {"id_role": "obj", "pa_role": "theme"},
+      {"id_role": "obl", "pa_role": "goal"}
+    ]
+  },
+  "auto.n.vehicle": {
+    "ID": {"category": "noun", "licenses": [{"role": "det", "dependent_type": "determiner"}]},
+    "PA": {"semantic_type": "vehicle"},
+    "LINK": []
+  },
+  "bank.n.financial-institution": {
+    "ID": {"category": "noun"},
+    "PA": {"semantic_type": "financial_institution", "context_roles": ["location"]},
+    "LINK": []
+  },
+  "bank.n.seat": {
+    "ID": {"category": "noun"},
+    "PA": {"semantic_type": "seat", "context_roles": ["location"]},
+    "LINK": []
+  }
+}

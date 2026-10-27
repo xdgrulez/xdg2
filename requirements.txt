@@ -1,2 +1,4 @@
 openai
+pydbsp>=2.1.0
+typesafe-sdk>=0.6.0
 
